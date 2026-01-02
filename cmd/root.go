@@ -1,8 +1,9 @@
-package main
+package cmd
 
 import (
-	"fmt"
+	"nbarecap/internal/scores"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -11,19 +12,28 @@ var rootCmd = &cobra.Command{
 	Use:   "nbarecap",
 	Short: "Get access to NBA summaries from your terminal.",
 	Long: `nbarecap provides several subcommands and flags to access NBA summaries for teams, players and dates.
-Try: nbarecap today`,
+Try: nbarecap games`,
 }
 
-var todayCmd = &cobra.Command{
-	Use:   "today",
-	Short: "View today's scores.",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("today's scores here")
+var date string
+
+var gamesCmd = &cobra.Command{
+	Use:   "games",
+	Short: "View NBA games for a date (defaults to today).",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return scores.GetAllGamesForDate(&date)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(todayCmd)
+	gamesCmd.Flags().StringVarP(
+		&date,
+		"date",
+		"d",
+		time.Now().Format("2006-01-02"),
+		"Game date (YYYY-MM-DD)",
+	)
+	rootCmd.AddCommand(gamesCmd)
 }
 
 func Execute() {
