@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-	"nbarecap/internal/recaps"
+	"nbarecap/internal/ui"
 	"os"
 	"time"
 
@@ -21,12 +20,10 @@ var gamesCmd = &cobra.Command{
 	Use:   "games",
 	Short: "View NBA games for a date (defaults to today).",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		scores, err := recaps.GetAllGamesForDate(&date)
-		if err != nil {
-			fmt.Println("Error")
-		}
-		fmt.Println(scores)
-		return err
+		// tmp
+		model := ui.Model{date, ""}
+		model.RunGamesView()
+		return nil
 	},
 }
 
