@@ -6,72 +6,74 @@ import (
 	"nbarecap/internal/models"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/ronaudinho/nag"
 )
 
-func FormatGamesForDay(res nag.Response) (string, error) {
-	responseMap := nag.Map(res)
+func FormatGamesForDay(date *string, response nag.Response) ([]string, error) {
+	responseMap := nag.Map(response)
+	var result []string
 
 	ghAny, ok := responseMap[RsGameheader]
 	if !ok {
-		return "", errors.New(HeaderMissingGameheader)
+		return nil, errors.New(HeaderMissingGameheader)
 	}
 	ghRows, ok := ghAny.([]map[string]any)
 	if !ok {
-		return "", errors.New(HeaderBadGameheader)
+		return nil, errors.New(HeaderBadGameheader)
 	}
 
 	gameMap := buildGameMap(responseMap, ghRows)
 
 	list := make([]*models.GameInfo, 0, len(gameMap))
-	for _, g := range gameMap {
-		list = append(list, g)
+	for _, game := range gameMap {
+		list = append(list, game)
 	}
 	sort.SliceStable(list, func(i, j int) bool {
 		return list[i].SortKey < list[j].SortKey
 	})
 
-	var b strings.Builder
-	b.WriteString(TITLE)
+	result = append(result, *date+Title)
+	sb := strings.Builder{}
 
-	for _, g := range list {
-		awayAbbr := g.Away.Abbr
-		homeAbbr := g.Home.Abbr
+	for _, game := range list {
+		awayAbbr := game.Away.Abbr
+		homeAbbr := game.Home.Abbr
 		if awayAbbr == "" {
-			awayAbbr = g.AwayAbbr
+			awayAbbr = game.AwayAbbr
 		}
 		if homeAbbr == "" {
-			homeAbbr = g.HomeAbbr
+			homeAbbr = game.HomeAbbr
 		}
 
-		awayRec := formatRecord(g.Away.Record)
-		homeRec := formatRecord(g.Home.Record)
+		awayRec := formatRecord(game.Away.Record)
+		homeRec := formatRecord(game.Home.Record)
 
 		score := ""
-		if g.Away.Pts != nil && g.Home.Pts != nil {
-			score = fmt.Sprintf(ScoresFormat, *g.Away.Pts, *g.Home.Pts)
+		if game.Away.Pts != nil && game.Home.Pts != nil {
+			score = fmt.Sprintf(ScoresFormat, *game.Away.Pts, *game.Home.Pts)
 		}
 
-		_, _ = fmt.Fprintf(&b, "%s — %s%s @ %s%s%s\n",
-			strings.TrimSpace(g.Status),
+		_, _ = fmt.Fprintf(&sb, "%s — %s%s @ %s%s%s\n",
+			strings.TrimSpace(game.Status),
 			awayAbbr, awayRec,
 			homeAbbr, homeRec,
 			score,
 		)
 
-		tv := formatTVLine(g)
+		tv := formatTVLine(game)
 		if tv != "" {
-			_, _ = fmt.Fprintf(&b, "  %s\n", tv)
+			_, _ = fmt.Fprintf(&sb, "  %s\n", tv)
 		}
-		if strings.TrimSpace(g.Arena) != "" {
-			_, _ = fmt.Fprintf(&b, "  %s\n", strings.TrimSpace(g.Arena))
+		if strings.TrimSpace(game.Arena) != "" {
+			_, _ = fmt.Fprintf(&sb, "  %s\n", strings.TrimSpace(game.Arena))
 		}
 
-		b.WriteString("\n")
+		result = append(result, sb.String())
 	}
 
-	return b.String(), nil
+	return result, nil
 }
 
 func formatRecord(rec string) string {
@@ -97,13 +99,16 @@ func formatTVLine(g *models.GameInfo) string {
 	return strings.Join(parts, " • ")
 }
 
-func GetAllGamesForDate(date *string) (string, error) {
+func GetAllGamesForDate(date *time.Time) ([]string, error) {
+	dateStr := ""
 	sb := nag.NewScoreBoardV2()
+
 	if date != nil {
-		sb.GameDate = *date
+		dateStr = (*date).Format("2006-01-02")
+		sb.GameDate = dateStr
 	}
 	if err := sb.Get(); err != nil {
-		return "", nil
+		return nil, nil
 	}
-	return FormatGamesForDay(*sb.Response)
+	return FormatGamesForDay(&dateStr, *sb.Response)
 }

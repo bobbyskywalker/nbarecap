@@ -1,7 +1,7 @@
 package recaps
 
 const (
-	TITLE = "Today's NBA games\n\n"
+	Title = " NBA games\n\n"
 
 	AbbrLen     = 3
 	AbbrPairLen = AbbrLen * 2
