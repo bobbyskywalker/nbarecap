@@ -35,9 +35,10 @@ func FormatGamesForDay(date *string, response nag.Response) ([]string, error) {
 	})
 
 	result = append(result, *date+Title)
-	sb := strings.Builder{}
 
 	for _, game := range list {
+		sb := strings.Builder{}
+
 		awayAbbr := game.Away.Abbr
 		homeAbbr := game.Home.Abbr
 		if awayAbbr == "" {
