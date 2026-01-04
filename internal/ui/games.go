@@ -3,46 +3,70 @@ package ui
 import (
 	"log"
 	"nbarecap/internal/recaps"
-	"os"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Model struct {
-	Date   string
-	Scores string
+	Date       time.Time
+	gameScores []string
+	err        error
+}
+
+type scoresMsg struct {
+	gameScores []string
+	err        error
+}
+
+func fetchScoresCmd(date time.Time) tea.Cmd {
+	return func() tea.Msg {
+		scores, err := recaps.GetAllGamesForDate(&date)
+		return scoresMsg{scores, err}
+	}
 }
 
 func (m Model) Init() tea.Cmd {
-	return nil
+	return fetchScoresCmd(m.Date)
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+
+	case scoresMsg:
+		if msg.err != nil {
+			m.err = msg.err
+			return m, tea.Quit
+		}
+		m.gameScores = msg.gameScores
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
+		case "left":
+			m.Date = m.Date.AddDate(0, 0, -1)
+			return m, fetchScoresCmd(m.Date)
+		case "right":
+			m.Date = m.Date.AddDate(0, 0, 1)
+			return m, fetchScoresCmd(m.Date)
 		}
 	}
 	return m, nil
 }
 
 func (m Model) View() string {
-	return m.Scores
+	return m.gameScores
 }
 
-func (m Model) RunGamesView() {
-	f, err := tea.LogToFile("debug.log", "debug")
+func RunGamesView(date time.Time) {
+	f, err := tea.LogToFile("tea.log", "debug")
 	if err != nil {
 		log.Fatalf("Error: %w", err)
 	}
-	defer func(f *os.File) {
-		_ = f.Close()
-	}(f)
+	f.Close()
 
-	/* tmp */
-	m.Scores, _ = recaps.GetAllGamesForDate(&m.Date)
+	m := Model{Date: date}
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)

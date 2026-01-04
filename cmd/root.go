@@ -1,8 +1,9 @@
 package cmd
 
 import (
+	"errors"
+	"log"
 	"nbarecap/internal/ui"
-	"os"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -15,17 +16,20 @@ var rootCmd = &cobra.Command{
 Try: nbarecap games`,
 }
 
-var date string
 var gamesCmd = &cobra.Command{
 	Use:   "games",
 	Short: "View NBA games for a date (defaults to today).",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// tmp
-		model := ui.Model{date, ""}
-		model.RunGamesView()
+		date, err := time.Parse("2006-01-02", date)
+		if err != nil {
+			return errors.New("invalid date: correct format is YYYY-MM-DD")
+		}
+		ui.RunGamesView(date)
 		return nil
 	},
 }
+
+var date string
 
 func init() {
 	gamesCmd.Flags().StringVarP(
@@ -41,6 +45,6 @@ func init() {
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }
