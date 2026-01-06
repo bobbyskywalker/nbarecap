@@ -1,4 +1,4 @@
-package recaps
+package nba
 
 import (
 	"nbarecap/internal/models"

@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 	"log"
-	"nbarecap/internal/recaps"
+	"nbarecap/internal/nba"
 	"time"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -42,7 +42,7 @@ type baseGameInfoMsg struct {
 
 /* Games API */
 func (m model) fetchScoresCmd() ([]string, error) {
-	scores, err := recaps.GetAllGamesForDate(&m.date)
+	scores, err := nba.GetAllGamesForDate(&m.date)
 	m.gameScores = scores
 	return scores, err
 }

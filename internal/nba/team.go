@@ -1,4 +1,4 @@
-package recaps
+package nba
 
 var TeamNameToID = map[string]string{
 	"hawks":         "1610612737",

@@ -1,4 +1,4 @@
-package recaps
+package nba
 
 import (
 	"errors"
@@ -56,7 +56,7 @@ func FormatGamesForDay(date *string, response nag.Response) ([]string, error) {
 			score = fmt.Sprintf(ScoresFormat, *game.Away.Pts, *game.Home.Pts)
 		}
 
-		_, _ = fmt.Fprintf(&sb, "%s — %s%s @ %s%s%s\n",
+		_, _ = fmt.Fprintf(&sb, GameInfoFormat,
 			strings.TrimSpace(game.Status),
 			awayAbbr, awayRec,
 			homeAbbr, homeRec,
@@ -89,13 +89,13 @@ func formatTVLine(g *models.GameInfo) string {
 	parts := make([]string, 0, 3)
 
 	if s := strings.TrimSpace(g.NatTV); s != "" {
-		parts = append(parts, "National: "+s)
+		parts = append(parts, fmt.Sprintf(NationalBroadcastInfoFormat, s))
 	}
 	if s := strings.TrimSpace(g.HomeTV); s != "" {
-		parts = append(parts, "Home: "+s)
+		parts = append(parts, fmt.Sprintf(HomeBroadcastInfoFormat, s))
 	}
 	if s := strings.TrimSpace(g.AwayTV); s != "" {
-		parts = append(parts, "Away: "+s)
+		parts = append(parts, fmt.Sprintf(AwayBroadcastInfoFormat, s))
 	}
 	return strings.Join(parts, " • ")
 }
@@ -105,7 +105,7 @@ func GetAllGamesForDate(date *time.Time) ([]string, error) {
 	sb := nag.NewScoreBoardV2()
 
 	if date != nil {
-		dateStr = (*date).Format("2006-01-02")
+		dateStr = (*date).Format(DateFormat)
 		sb.GameDate = dateStr
 	}
 	if err := sb.Get(); err != nil {
