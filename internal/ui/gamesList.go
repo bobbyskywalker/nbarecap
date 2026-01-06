@@ -1,22 +1,24 @@
 package ui
 
 import (
-	"fmt"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func newGameList(date time.Time) list.Model {
+const (
+	listHeight   = 10
+	defaultWidth = 20
+)
+
+func newGameList() list.Model {
 	l := list.New([]list.Item{}, gameItemDelegate{}, defaultWidth, listHeight)
-	l.Title = fmt.Sprintf(titleFormat, date.Format(dateFormat))
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
-	l.Styles.Title = titleStyle
+	l.SetShowHelp(true)
+	l.SetShowTitle(false)
 	l.Styles.PaginationStyle = paginationStyle
-	l.Styles.HelpStyle = helpStyle
 	return l
 }
 

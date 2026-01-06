@@ -12,11 +12,8 @@ import (
 )
 
 const (
-	listHeight   = 15
-	defaultWidth = 20
-	dateFormat   = "2006-01-02"
-	titleFormat  = "Games on %s"
-	dayStep      = 1
+	dateFormat = "2006-01-02"
+	dayStep    = 1
 )
 
 /* Models */
@@ -50,10 +47,8 @@ func (m model) fetchScoresCmd() ([]string, error) {
 	return scores, err
 }
 
-func updateDates(date time.Time, dateDelta int) (time.Time, string) {
-	date = date.AddDate(0, 0, dateDelta)
-	title := fmt.Sprintf(titleFormat, date.Format(dateFormat))
-	return date, title
+func updateDate(date time.Time, dateDelta int) time.Time {
+	return date.AddDate(0, 0, dateDelta)
 }
 
 /* Tea program */
@@ -83,11 +78,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "left":
-			m.date, m.list.Title = updateDates(m.date, -dayStep)
+			m.date = updateDate(m.date, -dayStep)
 			return m, m.buildBaseGameInfoList()
 
 		case "right":
-			m.date, m.list.Title = updateDates(m.date, dayStep)
+			m.date = updateDate(m.date, dayStep)
 			return m, m.buildBaseGameInfoList()
 
 		case "q", "ctrl+c":
@@ -114,8 +109,8 @@ func (m model) View() string {
 
 	header := lipgloss.NewStyle().
 		Bold(true).
-		Foreground(lipgloss.Color("240")).
-		Render("←/→ change day • ↑/↓ scroll • q quit")
+		Foreground(lipgloss.Color("#F5C542")).
+		Render(fmt.Sprintf("NBARECAP • %s", m.date.Format(dateFormat)))
 
 	footer := lipgloss.NewStyle().
 		Bold(true).
@@ -126,12 +121,14 @@ func (m model) View() string {
 		return quitTextStyle.Render(fmt.Sprintf("Selected game %s!", m.choice))
 	}
 
+	table := tableBoxStyle.Render(m.list.View())
+
 	return lipgloss.Place(
 		m.termWidth,
 		m.termHeight,
 		lipgloss.Center,
 		lipgloss.Center,
-		header+"\n"+m.list.View()+"\n"+footer,
+		header+"\n"+table+"\n"+footer,
 	)
 }
 
@@ -144,7 +141,7 @@ func RunGamesView(date time.Time) {
 
 	m := model{
 		date: date,
-		list: newGameList(date),
+		list: newGameList(),
 	}
 
 	p := tea.NewProgram(m, tea.WithAltScreen())

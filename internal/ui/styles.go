@@ -7,12 +7,6 @@ import (
 
 /* List styling */
 var (
-	titleStyle = lipgloss.NewStyle().
-			MarginLeft(2).
-			Bold(true).
-			Underline(true).
-			Foreground(lipgloss.Color("#0057B8")) // blue-ish
-
 	itemStyle = lipgloss.NewStyle().
 			PaddingLeft(4).
 			Foreground(lipgloss.Color("#E5E7EB")) // cool gray
@@ -27,13 +21,13 @@ var (
 			PaddingLeft(4).
 			Foreground(lipgloss.Color("#9CA3AF"))
 
-	helpStyle = list.DefaultStyles().
-			HelpStyle.
-			PaddingLeft(4).
-			PaddingBottom(1).
-			Foreground(lipgloss.Color("#9CA3AF"))
-
 	quitTextStyle = lipgloss.NewStyle().
 			Margin(1, 0, 2, 4).
 			Foreground(lipgloss.Color("#F9FAFB"))
+
+	tableBoxStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#0057B8")).
+			Bold(true).
+			Padding(1, 2)
 )
