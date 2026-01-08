@@ -11,7 +11,7 @@ import (
 	"github.com/ronaudinho/nag"
 )
 
-func FormatGamesForDay(date *string, response nag.Response) ([]string, error) {
+func formatGamesForDay(date *string, response nag.Response) ([]string, error) {
 	responseMap := nag.Map(response)
 	var result []string
 
@@ -109,7 +109,7 @@ func GetAllGamesForDate(date *time.Time) ([]string, error) {
 		sb.GameDate = dateStr
 	}
 	if err := sb.Get(); err != nil {
-		return nil, nil
+		return nil, errors.New(fmt.Sprintf("Error fetching games: %v", err))
 	}
-	return FormatGamesForDay(&dateStr, *sb.Response)
+	return formatGamesForDay(&dateStr, *sb.Response)
 }
