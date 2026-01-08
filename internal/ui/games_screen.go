@@ -43,6 +43,9 @@ type baseGameInfoMsg struct {
 /* Games API */
 func (m model) fetchScoresCmd() ([]string, error) {
 	scores, err := nba.GetAllGamesForDate(&m.date)
+	if err != nil {
+		return nil, err
+	}
 	m.gameScores = scores
 	return scores, err
 }
