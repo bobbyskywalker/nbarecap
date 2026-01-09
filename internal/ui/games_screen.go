@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"log"
+	"nbarecap/internal/models"
 	"nbarecap/internal/nba"
 	"time"
 
@@ -19,18 +20,21 @@ const (
 /* Models */
 type model struct {
 	date       time.Time
-	gameScores []string
+	gameScores []models.GameInfoFormatted
 	numGames   int
 	err        error
 
 	list   list.Model
-	choice string
+	choice *gameInfoItem
 
 	termWidth  int
 	termHeight int
 }
 
-type gameInfoItem string
+type gameInfoItem struct {
+	id    string
+	value string
+}
 
 func (g gameInfoItem) FilterValue() string { return "" }
 
@@ -41,7 +45,7 @@ type baseGameInfoMsg struct {
 }
 
 /* Games API */
-func (m model) fetchScoresCmd() ([]string, error) {
+func (m model) fetchScoresCmd() ([]models.GameInfoFormatted, error) {
 	scores, err := nba.GetAllGamesForDate(&m.date)
 	if err != nil {
 		return nil, err
@@ -94,7 +98,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			i, ok := m.list.SelectedItem().(gameInfoItem)
 			if ok {
-				m.choice = string(i)
+				m.choice = &i
 			}
 			return m, tea.Quit
 		}
@@ -120,7 +124,7 @@ func (m model) View() string {
 		Foreground(lipgloss.Color("240")).
 		Render(fmt.Sprintf("Showing %d games", m.numGames))
 
-	if m.choice != "" {
+	if m.choice != nil {
 		return quitTextStyle.Render(fmt.Sprintf("Selected game %s!", m.choice))
 	}
 

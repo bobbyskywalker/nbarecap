@@ -34,8 +34,8 @@ func (m model) buildBaseGameInfoList() tea.Cmd {
 			if i == 0 {
 				continue
 			}
-			lines := strings.Split(score, "\n")
-			items = append(items, gameInfoItem(lines[0]))
+			lines := strings.Split(score.GameInfo, "\n")
+			items = append(items, gameInfoItem{score.GameId, lines[0]})
 		}
 		return baseGameInfoMsg{items: items, err: nil}
 	}

@@ -11,9 +11,9 @@ import (
 	"github.com/ronaudinho/nag"
 )
 
-func formatGamesForDay(date *string, response nag.Response) ([]string, error) {
+func formatGamesForDay(date *string, response nag.Response) ([]models.GameInfoFormatted, error) {
 	responseMap := nag.Map(response)
-	var result []string
+	var result []models.GameInfoFormatted
 
 	ghAny, ok := responseMap[RsGameheader]
 	if !ok {
@@ -34,7 +34,7 @@ func formatGamesForDay(date *string, response nag.Response) ([]string, error) {
 		return list[i].SortKey < list[j].SortKey
 	})
 
-	result = append(result, *date+Title)
+	result = append(result, models.NewGameInfoFormatted("", *date+Title))
 
 	for _, game := range list {
 		sb := strings.Builder{}
@@ -71,7 +71,7 @@ func formatGamesForDay(date *string, response nag.Response) ([]string, error) {
 			_, _ = fmt.Fprintf(&sb, "  %s\n", strings.TrimSpace(game.Arena))
 		}
 
-		result = append(result, sb.String())
+		result = append(result, models.NewGameInfoFormatted(game.GameID, sb.String()))
 	}
 
 	return result, nil
@@ -100,7 +100,7 @@ func formatTVLine(g *models.GameInfo) string {
 	return strings.Join(parts, " • ")
 }
 
-func GetAllGamesForDate(date *time.Time) ([]string, error) {
+func GetAllGamesForDate(date *time.Time) ([]models.GameInfoFormatted, error) {
 	dateStr := ""
 	sb := nag.NewScoreBoardV2()
 
