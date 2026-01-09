@@ -100,6 +100,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if ok {
 				m.choice = &i
 			}
+			nba.FetchBoxScoreForGame(i.id)
 			return m, tea.Quit
 		}
 	}
