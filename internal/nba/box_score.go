@@ -4,12 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"nbarecap/pkg"
+	"nbarecap/pkg/nba_api/clients"
 	"os"
 )
 
 func FetchBoxScoreForGame(gameId string) (*string, error) {
-	bx, err := pkg.FetchBoxScoreTraditionalV3JSON(gameId)
+	client := clients.NewNbaApiClient()
+	bx, err := client.FetchBoxScoreTraditionalV3JSON(gameId)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Error fetching box score for gameId %s: %v", gameId, err))
 	}
