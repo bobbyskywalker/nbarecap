@@ -1,26 +1,20 @@
 package clients
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 )
 
-const scoreBoardV2UrlFormat = "https://stats.nba.com/stats/scoreboardv2?GameDate=%s&LeagueID=00&DayOffset=0"
+const scoreBoardV2UrlFormat = "scoreboardv2?GameDate=%s&LeagueID=00&DayOffset=0"
 
 func (apiClient *NbaApiClient) FetchScoreboardV2(date string) (json.RawMessage, error) {
 	url := apiClient.baseUrl + apiClient.statsSuffix + fmt.Sprintf(scoreBoardV2UrlFormat, date)
-
-	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-	defer cancel()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := buildCommonGetRequest(url)
 	if err != nil {
 		return nil, err
 	}
-	setRequestHeaders(req)
 
 	response, err := apiClient.httpClient.Do(req)
 	if err != nil {

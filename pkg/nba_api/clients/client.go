@@ -1,6 +1,7 @@
 package clients
 
 import (
+	"context"
 	"net/http"
 	"time"
 )
@@ -21,13 +22,22 @@ func NewNbaApiClient() *NbaApiClient {
 	}
 }
 
+func buildCommonGetRequest(url string) (*http.Request, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	setRequestHeaders(req)
+	return req.WithContext(ctx), nil
+}
+
 func setRequestHeaders(req *http.Request) {
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
 	req.Header.Set("Accept", "application/json, text/plain, */*")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 	req.Header.Set("Referer", "https://www.nba.com/")
 	req.Header.Set("Origin", "https://www.nba.com")
-	req.Header.Set("Connection", "keep-alive")
-	req.Header.Set("x-nba-stats-origin", "stats")
-	req.Header.Set("x-nba-stats-token", "true")
 }

@@ -1,7 +1,6 @@
 package clients
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,14 +12,7 @@ const boxScoreV3UrlFormat = "boxscoretraditionalv3?GameID=%s&StartPeriod=0&EndPe
 func (apiClient *NbaApiClient) FetchBoxScoreTraditionalV3JSON(gameID string) (json.RawMessage, error) {
 	url := apiClient.baseUrl + apiClient.statsSuffix + fmt.Sprintf(boxScoreV3UrlFormat, gameID)
 
-	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-	defer cancel()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	setRequestHeaders(req)
+	req, err := buildCommonGetRequest(url)
 
 	response, err := apiClient.httpClient.Do(req)
 	if err != nil {
