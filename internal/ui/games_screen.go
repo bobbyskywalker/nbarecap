@@ -3,8 +3,8 @@ package ui
 import (
 	"fmt"
 	"log"
-	"nbarecap/internal/models"
 	"nbarecap/internal/nba"
+	"nbarecap/pkg/nba_api/models"
 	"time"
 
 	"github.com/charmbracelet/bubbles/list"

@@ -1,7 +1,7 @@
-package nba
+package mappers
 
 import (
-	"nbarecap/internal/models"
+	"nbarecap/pkg/nba_api/models"
 	"testing"
 )
 
@@ -161,7 +161,7 @@ func checkLineScoreRowsState(rows map[string]*models.GameInfo) bool {
 }
 
 func TestBuildGameMap(t *testing.T) {
-	gameMap := buildGameMap(mockResponseMap, mockGameHeaderRows)
+	gameMap := BuildGameMap(mockResponseMap, mockGameHeaderRows)
 	if checkGhRowsState(gameMap) || checkLineScoreRowsState(gameMap) {
 		t.Errorf("Game map state is not as expected")
 	}
