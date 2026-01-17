@@ -3,8 +3,6 @@ package clients
 import (
 	"context"
 	"fmt"
-	"io"
-	"nbarecap/pkg/nba_api/mappers"
 	"net/http"
 )
 
@@ -20,19 +18,6 @@ func (apiClient *NbaApiClient) FetchScoreboardV2(date string) (map[string]any, e
 	if err != nil {
 		return nil, err
 	}
-	setRequestHeaders(req)
-
-	response, err := apiClient.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-
-	body, err := io.ReadAll(response.Body)
-
-	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("nba stats HTTP %d", response.StatusCode)
-	}
-
-	return mappers.MapResultSetsToResponseMap(body)
+	setCommonRequestHeaders(req)
+	return getResultSetsFromJson(apiClient, req)
 }

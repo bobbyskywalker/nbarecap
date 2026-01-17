@@ -1,7 +1,10 @@
 package clients
 
 import (
-	"context"
+	"errors"
+	"fmt"
+	"io"
+	"nbarecap/pkg/nba_api/mappers"
 	"net/http"
 	"time"
 )
@@ -22,22 +25,29 @@ func NewNbaApiClient() *NbaApiClient {
 	}
 }
 
-func buildCommonGetRequest(url string) (*http.Request, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-	defer cancel()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	setRequestHeaders(req)
-	return req.WithContext(ctx), nil
-}
-
-func setRequestHeaders(req *http.Request) {
+func setCommonRequestHeaders(req *http.Request) {
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
 	req.Header.Set("Accept", "application/json, text/plain, */*")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 	req.Header.Set("Referer", "https://www.nba.com/")
 	req.Header.Set("Origin", "https://www.nba.com")
+}
+
+func getResultSetsFromJson(apiClient *NbaApiClient, request *http.Request) (map[string]any, error) {
+	response, err := apiClient.httpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.New(fmt.Sprintf("nba stats HTTP %d", response.StatusCode))
+	}
+
+	return mappers.MapResultSetsToResponseMap(body)
 }

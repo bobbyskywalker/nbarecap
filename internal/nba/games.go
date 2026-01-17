@@ -123,7 +123,7 @@ func GetAllGamesForDate(date *time.Time) ([]models.GameInfoFormatted, error) {
 	client := clients.NewNbaApiClient()
 	rsMap, err := client.FetchScoreboardV2(dateStr)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("Error fetching games for date %s: %v", dateStr, err))
 	}
 	return formatGamesForDay(&dateStr, rsMap)
 }
