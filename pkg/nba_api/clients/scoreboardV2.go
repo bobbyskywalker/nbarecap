@@ -8,10 +8,9 @@ import (
 	"net/http"
 )
 
-const scoreBoardV2UrlFormat = "scoreboardv2?date=%s"
+const scoreBoardV2UrlFormat = "https://stats.nba.com/stats/scoreboardv2?GameDate=%s&LeagueID=00&DayOffset=0"
 
 func (apiClient *NbaApiClient) FetchScoreboardV2(date string) (json.RawMessage, error) {
-	// to fix
 	url := apiClient.baseUrl + apiClient.statsSuffix + fmt.Sprintf(scoreBoardV2UrlFormat, date)
 
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
