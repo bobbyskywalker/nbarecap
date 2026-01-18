@@ -2,13 +2,14 @@ package clients
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
 const boxScoreV3UrlFormat = "boxscoretraditionalv3?GameID=%s&StartPeriod=0&EndPeriod=0&StartRange=0&EndRange=0&RangeType=0"
 
-func (apiClient *NbaApiClient) FetchBoxScoreTraditionalV3JSON(gameID string) (map[string]any, error) {
+func (apiClient *NbaApiClient) FetchBoxScoreTraditionalV3Json(gameID string) (json.RawMessage, error) {
 	url := apiClient.baseUrl + apiClient.statsSuffix + fmt.Sprintf(boxScoreV3UrlFormat, gameID)
 
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
@@ -19,5 +20,5 @@ func (apiClient *NbaApiClient) FetchBoxScoreTraditionalV3JSON(gameID string) (ma
 		return nil, err
 	}
 	setCommonRequestHeaders(req)
-	return getResultSetsFromJson(apiClient, req)
+	return getCommonJsonResponse(apiClient, req)
 }

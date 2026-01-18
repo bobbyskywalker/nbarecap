@@ -5,6 +5,7 @@ import (
 	"log"
 	"nbarecap/internal/nba"
 	"nbarecap/pkg/nba_api/models"
+	"os"
 	"time"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -100,6 +101,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if ok {
 				m.choice = &i
 			}
+			/* NOTE: tmp for debug */
+			file, _ := os.Create("id.txt")
+			file.WriteString(i.id)
+			file.Close()
 			//nba.FetchBoxScoreForGame(i.id)
 			return m, tea.Quit
 		}

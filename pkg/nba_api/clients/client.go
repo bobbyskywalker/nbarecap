@@ -1,6 +1,7 @@
 package clients
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -31,6 +32,26 @@ func setCommonRequestHeaders(req *http.Request) {
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 	req.Header.Set("Referer", "https://www.nba.com/")
 	req.Header.Set("Origin", "https://www.nba.com")
+}
+
+// TODO: refactor for two ways of fetching
+
+func getCommonJsonResponse(apiClient *NbaApiClient, request *http.Request) (json.RawMessage, error) {
+	response, err := apiClient.httpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.New(fmt.Sprintf("nba stats HTTP %d", response.StatusCode))
+	}
+	return body, nil
 }
 
 func getResultSetsFromJson(apiClient *NbaApiClient, request *http.Request) (map[string]any, error) {
