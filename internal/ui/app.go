@@ -10,14 +10,15 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 const (
-	dateFormat         = "2006-01-02"
-	dayStep            = 1
-	boxScoreLoadingMsg = "\nLoading box score...\n\n(esc to go back)"
-	boxScoreLoadedMsg  = "\n\n(esc to go back)"
+	dateFormat               = "2006-01-02"
+	dayStep                  = 1
+	boxScoreLoadingMsg       = "\nLoading box score...\n\n(esc to go back)"
+	boxScoreLoadedMsg        = "\n\n(esc to go back)"
+	gamesListHeaderMsgFormat = "NBARECAP • %s"
+	gamesListFooterMsgFormat = "Showing %d games"
 )
 
 type appState int
@@ -191,50 +192,14 @@ func (m model) View() string {
 		return "Error: " + m.err.Error()
 	}
 
-	header := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#F5C542")).
-		Render(fmt.Sprintf("NBARECAP • %s", m.date.Format(dateFormat)))
-
-	footer := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("240")).
-		Render(fmt.Sprintf("Showing %d games", m.numGames))
+	header := gamesListHeaderStyle.Render(fmt.Sprintf(gamesListHeaderMsgFormat, m.date.Format(dateFormat)))
+	footer := gamesListFooterStyle.Render(fmt.Sprintf(gamesListFooterMsgFormat, m.numGames))
 
 	switch m.state {
-
 	case games:
-		tableView := tableBoxStyle.Render(m.list.View())
-
-		return lipgloss.Place(
-			m.termWidth,
-			m.termHeight,
-			lipgloss.Center,
-			lipgloss.Center,
-			header+"\n"+tableView+"\n"+footer,
-		)
-
+		return m.renderGamesView(header, footer)
 	case boxScore:
-		if m.currentBoxScore == nil {
-			return lipgloss.Place(
-				m.termWidth,
-				m.termHeight,
-				lipgloss.Center,
-				lipgloss.Center,
-				header+boxScoreLoadingMsg,
-			)
-		}
-
-		boxView := tableBoxStyle.Render(m.boxTable.View())
-
-		return lipgloss.Place(
-			m.termWidth,
-			m.termHeight,
-			lipgloss.Center,
-			lipgloss.Center,
-			header+"\n"+boxView+boxScoreLoadedMsg,
-		)
-
+		return m.renderBoxScoreView(header)
 	default:
 		return ""
 	}

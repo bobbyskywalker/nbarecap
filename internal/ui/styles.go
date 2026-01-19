@@ -7,6 +7,14 @@ import (
 
 /* List styling */
 var (
+	gamesListHeaderStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("#F5C542"))
+
+	gamesListFooterStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("240"))
+
 	itemStyle = lipgloss.NewStyle().
 			PaddingLeft(4).
 			Foreground(lipgloss.Color("#E5E7EB")) // cool gray

@@ -5,6 +5,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const (
@@ -39,4 +40,16 @@ func (m model) buildBaseGameInfoList() tea.Cmd {
 		}
 		return baseGameInfoMsg{items: items, err: nil}
 	}
+}
+
+func (m model) renderGamesView(header string, footer string) string {
+	tableView := tableBoxStyle.Render(m.list.View())
+
+	return lipgloss.Place(
+		m.termWidth,
+		m.termHeight,
+		lipgloss.Center,
+		lipgloss.Center,
+		header+"\n"+tableView+"\n"+footer,
+	)
 }

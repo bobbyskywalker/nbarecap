@@ -1,10 +1,12 @@
 package ui
 
 import (
+	"fmt"
 	"nbarecap/pkg/nba_api/models"
 	"strconv"
 
 	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/lipgloss"
 )
 
 func playerStatsToRow(player *models.PlayerV3) table.Row {
@@ -22,15 +24,27 @@ func playerStatsToRow(player *models.PlayerV3) table.Row {
 	}
 }
 
+func appendTeamIdRow(rows []table.Row, boxScore *models.BoxScoreTraditionalV3) []table.Row {
+	rows = append(rows, table.Row{"", "", "", "", ""})
+	rows = append(rows, table.Row{
+		fmt.Sprintf("— %s (%s) —", boxScore.HomeTeam.TeamName, boxScore.HomeTeam.TeamTricode),
+		"", "", "",
+	})
+	return rows
+}
+
 func boxScoreToRows(boxScore *models.BoxScoreTraditionalV3) []table.Row {
 	homePlayers := boxScore.HomeTeam.Players
 	awayPlayers := boxScore.AwayTeam.Players
 
 	rows := make([]table.Row, 0, len(homePlayers)+len(awayPlayers))
 
+	rows = appendTeamIdRow(rows, boxScore)
 	for _, p := range boxScore.HomeTeam.Players {
 		rows = append(rows, playerStatsToRow(&p))
 	}
+
+	rows = appendTeamIdRow(rows, boxScore)
 	for _, p := range boxScore.AwayTeam.Players {
 		rows = append(rows, playerStatsToRow(&p))
 	}
@@ -56,7 +70,29 @@ func newBoxScoreTable(boxScore *models.BoxScoreTraditionalV3) table.Model {
 		table.WithRows(rows),
 		table.WithFocused(true),
 	)
-	/* TODO: table styles */
+	/* TODO: table styles & colors */
 	t.SetStyles(table.DefaultStyles())
 	return t
+}
+
+func (m model) renderBoxScoreView(header string) string {
+	if m.currentBoxScore == nil {
+		return lipgloss.Place(
+			m.termWidth,
+			m.termHeight,
+			lipgloss.Center,
+			lipgloss.Center,
+			header+boxScoreLoadingMsg,
+		)
+	}
+
+	boxView := tableBoxStyle.Render(m.boxTable.View())
+
+	return lipgloss.Place(
+		m.termWidth,
+		m.termHeight,
+		lipgloss.Center,
+		lipgloss.Center,
+		header+"\n"+boxView+boxScoreLoadedMsg,
+	)
 }
