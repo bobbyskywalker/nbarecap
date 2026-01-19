@@ -31,6 +31,3 @@ type GameInfoFormatted struct {
 func NewGameInfoFormatted(gameId string, gameInfo string) GameInfoFormatted {
 	return GameInfoFormatted{GameId: gameId, GameInfo: gameInfo}
 }
-
-type boxScoreV3 struct {
-}

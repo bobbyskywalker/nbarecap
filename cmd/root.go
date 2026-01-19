@@ -24,7 +24,7 @@ var gamesCmd = &cobra.Command{
 		if err != nil {
 			return errors.New("invalid date: correct format is YYYY-MM-DD")
 		}
-		ui.RunGamesView(date)
+		ui.StartUi(date)
 		return nil
 	},
 }

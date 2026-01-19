@@ -1,7 +1,5 @@
 package models
 
-// TODO: name the fields readable
-
 type BoxScoreTraditionalV3Response struct {
 	BoxScoreTraditional BoxScoreTraditionalV3 `json:"boxScoreTraditional"`
 }
@@ -11,6 +9,9 @@ type BoxScoreTraditionalV3 struct {
 	GameCode       string `json:"gameCode,omitempty"`
 	GameStatus     int    `json:"gameStatus,omitempty"`
 	GameStatusText string `json:"gameStatusText,omitempty"`
+
+	AwayTeamID int `json:"awayTeamId,omitempty"`
+	HomeTeamID int `json:"homeTeamId,omitempty"`
 
 	Period   PeriodV3 `json:"period,omitempty"`
 	HomeTeam TeamV3   `json:"homeTeam"`
@@ -41,83 +42,61 @@ type LeadersSideV3 struct {
 }
 
 type PlayerV3 struct {
-	PersonID   int            `json:"personId"`
-	FirstName  string         `json:"firstName,omitempty"`
-	FamilyName string         `json:"familyName,omitempty"`
-	NameI      string         `json:"nameI,omitempty"`
-	Position   string         `json:"position,omitempty"`
-	Comment    string         `json:"comment,omitempty"`
-	JerseyNum  string         `json:"jerseyNum,omitempty"`
-	Statistics map[string]any `json:"statistics,omitempty"`
+	PersonID   int    `json:"personId"`
+	FirstName  string `json:"firstName,omitempty"`
+	FamilyName string `json:"familyName,omitempty"`
+	NameI      string `json:"nameI,omitempty"`
+
+	PlayerSlug string `json:"playerSlug,omitempty"`
+
+	Position  string `json:"position,omitempty"`
+	Comment   string `json:"comment,omitempty"`
+	JerseyNum string `json:"jerseyNum,omitempty"`
+
+	Statistics PlayerStatsV3 `json:"statistics,omitempty"`
 }
 
 type TeamV3 struct {
-	TeamID      int            `json:"teamId"`
-	TeamCity    string         `json:"teamCity,omitempty"`
-	TeamName    string         `json:"teamName,omitempty"`
-	TeamTricode string         `json:"teamTricode,omitempty"`
-	Players     []PlayerV3     `json:"players,omitempty"`
-	Statistics  map[string]any `json:"statistics,omitempty"`
-	Starters    map[string]any `json:"starters,omitempty"`
-	Bench       map[string]any `json:"bench,omitempty"`
+	TeamID      int    `json:"teamId"`
+	TeamCity    string `json:"teamCity,omitempty"`
+	TeamName    string `json:"teamName,omitempty"`
+	TeamTricode string `json:"teamTricode,omitempty"`
+	TeamSlug    string `json:"teamSlug,omitempty"`
+
+	Players []PlayerV3 `json:"players,omitempty"`
+
+	Statistics TeamStatsV3 `json:"statistics,omitempty"`
+	Starters   TeamStatsV3 `json:"starters,omitempty"`
+	Bench      TeamStatsV3 `json:"bench,omitempty"`
 }
 
-type TeamStatsV3 struct {
-	Minutes string `json:"minutes,omitempty"`
-
-	Points int `json:"points,omitempty"`
-
-	Fgm int     `json:"fgm,omitempty"`
-	Fga int     `json:"fga,omitempty"`
-	Fgp float64 `json:"fgp,omitempty"`
-
-	Ftm int     `json:"ftm,omitempty"`
-	Fta int     `json:"fta,omitempty"`
-	Ftp float64 `json:"ftp,omitempty"`
-
-	Tpm int     `json:"tpm,omitempty"`
-	Tpa int     `json:"tpa,omitempty"`
-	Tpp float64 `json:"tpp,omitempty"`
-
-	OffReb int `json:"offReb,omitempty"`
-	DefReb int `json:"defReb,omitempty"`
-	TotReb int `json:"totReb,omitempty"`
-
-	Ast int `json:"ast,omitempty"`
-	Stl int `json:"stl,omitempty"`
-	Blk int `json:"blk,omitempty"`
-
-	Tov int `json:"tov,omitempty"`
-	Pf  int `json:"pf,omitempty"`
-
-	PlusMinus float64 `json:"plusMinus,omitempty"`
-}
+type TeamStatsV3 = PlayerStatsV3
 
 type PlayerStatsV3 struct {
-	Points int `json:"points,omitempty"`
+	Minutes string `json:"minutes,omitempty"`
 
-	Fgm int     `json:"fgm,omitempty"`
-	Fga int     `json:"fga,omitempty"`
-	Fgp float64 `json:"fgp,omitempty"`
+	FieldGoalsMade       int     `json:"fieldGoalsMade,omitempty"`
+	FieldGoalsAttempted  int     `json:"fieldGoalsAttempted,omitempty"`
+	FieldGoalsPercentage float64 `json:"fieldGoalsPercentage,omitempty"`
 
-	Ftm int     `json:"ftm,omitempty"`
-	Fta int     `json:"fta,omitempty"`
-	Ftp float64 `json:"ftp,omitempty"`
+	ThreePointersMade       int     `json:"threePointersMade,omitempty"`
+	ThreePointersAttempted  int     `json:"threePointersAttempted,omitempty"`
+	ThreePointersPercentage float64 `json:"threePointersPercentage,omitempty"`
 
-	Tpm int     `json:"tpm,omitempty"`
-	Tpa int     `json:"tpa,omitempty"`
-	Tpp float64 `json:"tpp,omitempty"`
+	FreeThrowsMade       int     `json:"freeThrowsMade,omitempty"`
+	FreeThrowsAttempted  int     `json:"freeThrowsAttempted,omitempty"`
+	FreeThrowsPercentage float64 `json:"freeThrowsPercentage,omitempty"`
 
-	OffReb int `json:"offReb,omitempty"`
-	DefReb int `json:"defReb,omitempty"`
-	TotReb int `json:"totReb,omitempty"`
+	ReboundsOffensive int `json:"reboundsOffensive,omitempty"`
+	ReboundsDefensive int `json:"reboundsDefensive,omitempty"`
+	ReboundsTotal     int `json:"reboundsTotal,omitempty"`
 
-	Ast int `json:"ast,omitempty"`
-	Stl int `json:"stl,omitempty"`
-	Blk int `json:"blk,omitempty"`
+	Assists       int `json:"assists,omitempty"`
+	Steals        int `json:"steals,omitempty"`
+	Blocks        int `json:"blocks,omitempty"`
+	Turnovers     int `json:"turnovers,omitempty"`
+	FoulsPersonal int `json:"foulsPersonal,omitempty"`
 
-	Tov int `json:"tov,omitempty"`
-	Pf  int `json:"pf,omitempty"`
-
-	PlusMinus float64 `json:"plusMinus,omitempty"`
+	Points          int     `json:"points,omitempty"`
+	PlusMinusPoints float64 `json:"plusMinusPoints,omitempty"`
 }
