@@ -16,7 +16,6 @@ const (
 	dateFormat               = "2006-01-02"
 	dayStep                  = 1
 	boxScoreLoadingMsg       = "\nLoading box score...\n\n(esc to go back)"
-	boxScoreLoadedMsg        = "\n\n(esc to go back)"
 	gamesListHeaderMsgFormat = "NBARECAP • %s"
 	gamesListFooterMsgFormat = "Showing %d games"
 )
@@ -29,7 +28,7 @@ const (
 )
 
 /* Models */
-type model struct {
+type appModel struct {
 	/* Games list data */
 	date       time.Time
 	gameScores []models.GameInfoFormatted
@@ -40,6 +39,7 @@ type model struct {
 	/* Box score data */
 	boxTable        table.Model
 	currentBoxScore *models.BoxScoreTraditionalV3
+	showingAway     bool
 
 	/* Viewport params */
 	termWidth  int
@@ -70,7 +70,7 @@ type boxScoreMsg struct {
 }
 
 /* NBA API */
-func (m model) fetchScoresCmd() ([]models.GameInfoFormatted, error) {
+func (m appModel) fetchScoresCmd() ([]models.GameInfoFormatted, error) {
 	scores, err := nba.GetAllGamesForDate(&m.date)
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (m model) fetchScoresCmd() ([]models.GameInfoFormatted, error) {
 	return scores, err
 }
 
-func (m model) fetchBoxScoreCmd(gameID string) tea.Cmd {
+func (m appModel) fetchBoxScoreCmd(gameID string) tea.Cmd {
 	return func() tea.Msg {
 		bx, err := nba.GetBoxScoreForGame(gameID)
 		if err != nil {
@@ -95,11 +95,11 @@ func updateDate(date time.Time, dateDelta int) time.Time {
 
 /* Tea program */
 
-func (m model) Init() tea.Cmd {
+func (m appModel) Init() tea.Cmd {
 	return m.buildBaseGameInfoList()
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.WindowSizeMsg:
@@ -147,6 +147,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, cmd
 				}
 				m.choice = &it
+				m.showingAway = true
 				m.state = boxScore
 				m.err = nil
 				m.currentBoxScore = nil
@@ -169,13 +170,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.err = nil
 			m.currentBoxScore = msg.score
-			m.boxTable = newBoxScoreTable(msg.score)
+			m.boxTable = newBoxScoreTable(msg.score, m.showingAway)
 			return m, nil
 
 		case tea.KeyMsg:
 			switch msg.String() {
 			case "esc", "backspace":
 				m.state = games
+				return m, nil
+			case "left", "right":
+				m.showingAway = !m.showingAway
+				if m.currentBoxScore != nil {
+					m.boxTable = newBoxScoreTable(m.currentBoxScore, m.showingAway)
+				}
 				return m, nil
 			}
 		}
@@ -187,19 +194,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m model) View() string {
+func (m appModel) View() string {
 	if m.err != nil {
 		return "Error: " + m.err.Error()
 	}
 
-	header := gamesListHeaderStyle.Render(fmt.Sprintf(gamesListHeaderMsgFormat, m.date.Format(dateFormat)))
-	footer := gamesListFooterStyle.Render(fmt.Sprintf(gamesListFooterMsgFormat, m.numGames))
+	var header string
+	var footer string
 
 	switch m.state {
 	case games:
+		header = gamesListHeaderStyle.Render(fmt.Sprintf(gamesListHeaderMsgFormat, m.date.Format(dateFormat)))
+		footer = gamesListFooterStyle.Render(fmt.Sprintf(gamesListFooterMsgFormat, m.numGames))
 		return m.renderGamesView(header, footer)
 	case boxScore:
-		return m.renderBoxScoreView(header)
+		var header string
+		if m.currentBoxScore != nil {
+			header = buildBoxScoreHeader(m)
+		}
+		footer = buildBoxScoreFooter(m)
+		return m.renderBoxScoreView(header, footer)
 	default:
 		return ""
 	}
@@ -212,7 +226,7 @@ func StartUi(date time.Time) {
 	}
 	defer f.Close()
 
-	m := model{
+	m := appModel{
 		date: date,
 		list: newGameList(),
 	}

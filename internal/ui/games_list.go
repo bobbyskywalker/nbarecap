@@ -23,7 +23,7 @@ func newGameList() list.Model {
 	return l
 }
 
-func (m model) buildBaseGameInfoList() tea.Cmd {
+func (m appModel) buildBaseGameInfoList() tea.Cmd {
 	return func() tea.Msg {
 		scores, err := m.fetchScoresCmd()
 		if err != nil {
@@ -42,8 +42,8 @@ func (m model) buildBaseGameInfoList() tea.Cmd {
 	}
 }
 
-func (m model) renderGamesView(header string, footer string) string {
-	tableView := tableBoxStyle.Render(m.list.View())
+func (m appModel) renderGamesView(header string, footer string) string {
+	tableView := listBoxStyle.Render(m.list.View())
 
 	return lipgloss.Place(
 		m.termWidth,

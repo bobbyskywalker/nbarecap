@@ -24,34 +24,36 @@ func playerStatsToRow(player *models.PlayerV3) table.Row {
 	}
 }
 
-func appendTeamIdRow(rows []table.Row, boxScore *models.BoxScoreTraditionalV3) []table.Row {
+func appendTeamIdRow(rows []table.Row, team models.TeamV3) []table.Row {
 	rows = append(rows, table.Row{"", "", "", "", ""})
 	rows = append(rows, table.Row{
-		fmt.Sprintf("— %s (%s) —", boxScore.HomeTeam.TeamName, boxScore.HomeTeam.TeamTricode),
+		fmt.Sprintf("— %s (%s) —", team.TeamName, team.TeamTricode),
 		"", "", "",
 	})
 	return rows
 }
 
-func boxScoreToRows(boxScore *models.BoxScoreTraditionalV3) []table.Row {
-	homePlayers := boxScore.HomeTeam.Players
-	awayPlayers := boxScore.AwayTeam.Players
+func boxScoreToRows(boxScore *models.BoxScoreTraditionalV3, showingAway bool) []table.Row {
+	var players []models.PlayerV3
+	var team models.TeamV3
 
-	rows := make([]table.Row, 0, len(homePlayers)+len(awayPlayers))
-
-	rows = appendTeamIdRow(rows, boxScore)
-	for _, p := range boxScore.HomeTeam.Players {
-		rows = append(rows, playerStatsToRow(&p))
+	if showingAway {
+		players = boxScore.AwayTeam.Players
+		team = boxScore.AwayTeam
+	} else {
+		players = boxScore.HomeTeam.Players
+		team = boxScore.HomeTeam
 	}
 
-	rows = appendTeamIdRow(rows, boxScore)
-	for _, p := range boxScore.AwayTeam.Players {
+	rows := make([]table.Row, 0, len(players)+1)
+	rows = appendTeamIdRow(rows, team)
+	for _, p := range players {
 		rows = append(rows, playerStatsToRow(&p))
 	}
 	return rows
 }
 
-func newBoxScoreTable(boxScore *models.BoxScoreTraditionalV3) table.Model {
+func newBoxScoreTable(boxScore *models.BoxScoreTraditionalV3, showingAway bool) table.Model {
 	columns := []table.Column{
 		{Title: "Player", Width: 20},
 		{Title: "PTS", Width: 5},
@@ -63,7 +65,7 @@ func newBoxScoreTable(boxScore *models.BoxScoreTraditionalV3) table.Model {
 		{Title: "PF", Width: 5},
 		{Title: "+/-", Width: 5},
 	}
-	rows := boxScoreToRows(boxScore)
+	rows := boxScoreToRows(boxScore, showingAway)
 
 	t := table.New(
 		table.WithColumns(columns),
@@ -71,11 +73,15 @@ func newBoxScoreTable(boxScore *models.BoxScoreTraditionalV3) table.Model {
 		table.WithFocused(true),
 	)
 	/* TODO: table styles & colors */
-	t.SetStyles(table.DefaultStyles())
+	t.SetStyles(table.Styles{
+		Header:   gamesListHeaderStyle,
+		Cell:     lipgloss.Style{}.Italic(true),
+		Selected: selectedItemStyle,
+	})
 	return t
 }
 
-func (m model) renderBoxScoreView(header string) string {
+func (m appModel) renderBoxScoreView(header string, footer string) string {
 	if m.currentBoxScore == nil {
 		return lipgloss.Place(
 			m.termWidth,
@@ -86,13 +92,13 @@ func (m model) renderBoxScoreView(header string) string {
 		)
 	}
 
-	boxView := tableBoxStyle.Render(m.boxTable.View())
+	boxView := listBoxStyle.Render(m.boxTable.View())
 
 	return lipgloss.Place(
 		m.termWidth,
 		m.termHeight,
 		lipgloss.Center,
 		lipgloss.Center,
-		header+"\n"+boxView+boxScoreLoadedMsg,
+		header+"\n"+boxView+"\n"+footer,
 	)
 }
