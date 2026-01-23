@@ -22,3 +22,12 @@ type GameInfo struct {
 	AwayAbbr string
 	SortKey  string
 }
+
+type GameInfoFormatted struct {
+	GameId   string
+	GameInfo string
+}
+
+func NewGameInfoFormatted(gameId string, gameInfo string) GameInfoFormatted {
+	return GameInfoFormatted{GameId: gameId, GameInfo: gameInfo}
+}

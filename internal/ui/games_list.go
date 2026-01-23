@@ -5,6 +5,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const (
@@ -22,7 +23,7 @@ func newGameList() list.Model {
 	return l
 }
 
-func (m model) buildBaseGameInfoList() tea.Cmd {
+func (m appModel) buildBaseGameInfoList() tea.Cmd {
 	return func() tea.Msg {
 		scores, err := m.fetchScoresCmd()
 		if err != nil {
@@ -34,9 +35,21 @@ func (m model) buildBaseGameInfoList() tea.Cmd {
 			if i == 0 {
 				continue
 			}
-			lines := strings.Split(score, "\n")
-			items = append(items, gameInfoItem(lines[0]))
+			lines := strings.Split(score.GameInfo, "\n")
+			items = append(items, gameInfoItem{score.GameId, lines[0]})
 		}
 		return baseGameInfoMsg{items: items, err: nil}
 	}
+}
+
+func (m appModel) renderGamesView(header string, footer string) string {
+	tableView := listBoxStyle.Render(m.list.View())
+
+	return lipgloss.Place(
+		m.termWidth,
+		m.termHeight,
+		lipgloss.Center,
+		lipgloss.Center,
+		header+"\n"+tableView+"\n"+footer,
+	)
 }

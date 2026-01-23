@@ -1,9 +1,30 @@
-package nba
+package mappers
 
 import (
-	"nbarecap/internal/models"
 	"nbarecap/internal/utils"
+	"nbarecap/pkg/nba_api/models"
 	"strings"
+)
+
+const (
+	AbbrLen         = 3
+	AbbrPairLen     = AbbrLen * 2
+	SortKeySep      = "|"
+	SplitSep        = "/"
+	RsLinescore     = "LineScore"
+	HGameId         = "GAME_ID"
+	HStatusText     = "GAME_STATUS_TEXT"
+	HGamecode       = "GAMECODE"
+	HArenaName      = "ARENA_NAME"
+	HNatlTv         = "NATL_TV_BROADCASTER_ABBREVIATION"
+	HHomeTv         = "HOME_TV_BROADCASTER_ABBREVIATION"
+	HAwayTv         = "AWAY_TV_BROADCASTER_ABBREVIATION"
+	HHomeTeamId     = "HOME_TEAM_ID"
+	HVisTeamId      = "VISITOR_TEAM_ID"
+	HTeamId         = "TEAM_ID"
+	HTeamAbbr       = "TEAM_ABBREVIATION"
+	HTeamWinsLosses = "TEAM_WINS_LOSSES"
+	HPts            = "PTS"
 )
 
 func fallbackAbbrFromGameCode(gameCode string) (away, home string) {
@@ -23,7 +44,7 @@ func buildSortKey(status, gameID string) string {
 	return status + SortKeySep + gameID
 }
 
-func buildGameMap(responseMap map[string]any, ghRows []map[string]any) map[string]*models.GameInfo {
+func BuildGameMap(responseMap map[string]any, ghRows []map[string]any) map[string]*models.GameInfo {
 	gameMap := make(map[string]*models.GameInfo, len(ghRows))
 
 	for _, r := range ghRows {

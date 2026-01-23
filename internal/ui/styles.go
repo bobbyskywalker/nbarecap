@@ -5,29 +5,86 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-/* List styling */
+const (
+	goldenYellow    = "#F5C542"
+	gray            = "240"
+	coolGray        = "#E5E7EB"
+	red             = "#C8102E"
+	blue            = "#0057B8"
+	dotInactiveIcon = "○"
+	dotActiveIcon   = "●"
+)
+
 var (
+	/* List styling */
+	gamesListHeaderStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color(goldenYellow))
+
+	gamesListFooterStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color(gray))
+
 	itemStyle = lipgloss.NewStyle().
 			PaddingLeft(4).
-			Foreground(lipgloss.Color("#E5E7EB")) // cool gray
+			Foreground(lipgloss.Color(coolGray))
 
 	selectedItemStyle = lipgloss.NewStyle().
 				PaddingLeft(2).
-				Foreground(lipgloss.Color("#C8102E")). // red
+				Foreground(lipgloss.Color(red)).
 				Bold(true)
+
+	listBoxStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color(blue)).
+			Bold(true).
+			Padding(1, 2)
 
 	paginationStyle = list.DefaultStyles().
 			PaginationStyle.
 			PaddingLeft(4).
 			Foreground(lipgloss.Color("#9CA3AF"))
 
-	quitTextStyle = lipgloss.NewStyle().
-			Margin(1, 0, 2, 4).
-			Foreground(lipgloss.Color("#F9FAFB"))
+	/* Table styling */
+	awayTeamBadgeStyle = lipgloss.NewStyle().
+				Bold(true).
+				Padding(0, 1).
+				Foreground(lipgloss.Color(coolGray))
 
-	tableBoxStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#0057B8")).
-			Bold(true).
-			Padding(1, 2)
+	homeTeamBadgeStyle = lipgloss.NewStyle().
+				Bold(true).
+				Padding(0, 1).
+				Background(lipgloss.Color(red)).
+				Foreground(lipgloss.Color(coolGray))
+
+	boxScoreHeaderDateStyle = lipgloss.NewStyle().
+				Faint(true).
+				MarginTop(1)
+
+	dotActiveStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color(goldenYellow)).
+			Margin(0, 1)
+
+	dotInactiveStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color(gray)).
+				Margin(0, 1)
 )
+
+func buildBoxScoreHeader(m appModel) string {
+	home := awayTeamBadgeStyle.Background(lipgloss.Color(blue)).Render(m.currentBoxScore.HomeTeam.TeamTricode)
+	vs := homeTeamBadgeStyle.Render("VS")
+	away := awayTeamBadgeStyle.Background(lipgloss.Color(gray)).Render(m.currentBoxScore.AwayTeam.TeamTricode)
+	scoreHeader := lipgloss.JoinHorizontal(lipgloss.Center, home, vs, away)
+	dateHeader := boxScoreHeaderDateStyle.Render(m.date.Format(dateFormat))
+	return lipgloss.JoinVertical(lipgloss.Center, scoreHeader, dateHeader)
+}
+
+func buildBoxScoreFooter(m appModel) string {
+	var dots string
+	if m.showingAway {
+		dots = dotInactiveStyle.Render(dotInactiveIcon) + dotActiveStyle.Render(dotActiveIcon)
+	} else {
+		dots = dotActiveStyle.Render(dotActiveIcon) + dotInactiveStyle.Render(dotInactiveIcon)
+	}
+	return lipgloss.JoinVertical(lipgloss.Center, dots)
+}
