@@ -1,6 +1,9 @@
 package ui
 
 import (
+	"nbarecap/internal/utils"
+	"strconv"
+
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -11,9 +14,43 @@ const (
 	coolGray        = "#E5E7EB"
 	red             = "#C8102E"
 	blue            = "#0057B8"
+	black           = "#000000"
 	dotInactiveIcon = "○"
 	dotActiveIcon   = "●"
 )
+
+var TeamColors = map[string]string{
+	"ATL": "196",
+	"BOS": "34",
+	"BKN": "245",
+	"CHA": "62",
+	"CHI": "196",
+	"CLE": "52",
+	"DAL": "25",
+	"DEN": "178",
+	"DET": "124",
+	"GSW": "227",
+	"HOU": "160",
+	"IND": "21",
+	"LAC": "12",
+	"LAL": "93",
+	"MEM": "69",
+	"MIA": "161",
+	"MIL": "22",
+	"MIN": "27",
+	"NOP": "17",
+	"NYK": "208",
+	"OKC": "39",
+	"ORL": "27",
+	"PHI": "21",
+	"PHX": "129",
+	"POR": "160",
+	"SAC": "99",
+	"SAS": "250",
+	"TOR": "124",
+	"UTA": "60",
+	"WAS": "124",
+}
 
 var (
 	/* List styling */
@@ -46,21 +83,38 @@ var (
 			Foreground(lipgloss.Color("#9CA3AF"))
 
 	/* Table styling */
-	awayTeamBadgeStyle = lipgloss.NewStyle().
-				Bold(true).
-				Padding(0, 1).
-				Foreground(lipgloss.Color(coolGray))
-
 	homeTeamBadgeStyle = lipgloss.NewStyle().
 				Bold(true).
 				Padding(0, 1).
-				Background(lipgloss.Color(red)).
-				Foreground(lipgloss.Color(coolGray))
+				Background(lipgloss.Color(coolGray)).
+				Foreground(lipgloss.Color(black))
+
+	/* boxScore header styling */
+	boxScoreHeaderRowStyle = lipgloss.NewStyle().
+				MarginTop(1).
+				MarginBottom(1)
+
+	boxScoreHeaderScoreStyle = lipgloss.NewStyle().
+					Bold(true).
+					Padding(1, 4).
+					Border(lipgloss.DoubleBorder()).
+					BorderForeground(lipgloss.Color(goldenYellow)).
+					Foreground(lipgloss.Color(goldenYellow)).
+					Align(lipgloss.Center)
+
+	boxScoreHeaderStatusPillStyle = lipgloss.NewStyle().
+					Bold(true).
+					Padding(0, 2).
+					Border(lipgloss.RoundedBorder()).
+					BorderForeground(lipgloss.Color(gray)).
+					Foreground(lipgloss.Color(coolGray)).
+					Align(lipgloss.Center)
 
 	boxScoreHeaderDateStyle = lipgloss.NewStyle().
 				Faint(true).
 				MarginTop(1)
 
+	/* controls styling */
 	dotActiveStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color(goldenYellow)).
 			Margin(0, 1)
@@ -70,21 +124,26 @@ var (
 				Margin(0, 1)
 )
 
-func buildBoxScoreHeader(m appModel) string {
-	home := awayTeamBadgeStyle.Background(lipgloss.Color(blue)).Render(m.currentBoxScore.HomeTeam.TeamTricode)
-	vs := homeTeamBadgeStyle.Render("VS")
-	away := awayTeamBadgeStyle.Background(lipgloss.Color(gray)).Render(m.currentBoxScore.AwayTeam.TeamTricode)
-	scoreHeader := lipgloss.JoinHorizontal(lipgloss.Center, home, vs, away)
-	dateHeader := boxScoreHeaderDateStyle.Render(m.date.Format(dateFormat))
-	return lipgloss.JoinVertical(lipgloss.Center, scoreHeader, dateHeader)
+func createTeamBadgeStyle(tricode string) lipgloss.Style {
+	bg := TeamColors[tricode]
+	bgNum, _ := strconv.Atoi(bg)
+
+	fg := "15"
+	if utils.IsLightANSI(bgNum) {
+		fg = "0"
+	}
+
+	return lipgloss.NewStyle().
+		Bold(true).
+		Padding(0, 1).
+		Background(lipgloss.Color(bg)).
+		Foreground(lipgloss.Color(fg))
 }
 
-func buildBoxScoreFooter(m appModel) string {
-	var dots string
-	if m.showingAway {
-		dots = dotInactiveStyle.Render(dotInactiveIcon) + dotActiveStyle.Render(dotActiveIcon)
-	} else {
-		dots = dotActiveStyle.Render(dotActiveIcon) + dotInactiveStyle.Render(dotInactiveIcon)
-	}
-	return lipgloss.JoinVertical(lipgloss.Center, dots)
+func createBigTeamBadgeStyle(tricode string) lipgloss.Style {
+	return createTeamBadgeStyle(tricode).
+		Padding(1, 4).
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("0")).
+		Align(lipgloss.Center)
 }

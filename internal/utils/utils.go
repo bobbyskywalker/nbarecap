@@ -27,3 +27,30 @@ func AnyAsIntPtr(v any) *int {
 	}
 	return nil
 }
+
+func ansi256ToRGB(n int) (r, g, b int) {
+	if n < 16 {
+		return 0, 0, 0
+	}
+	if n >= 232 {
+		gray := (n-232)*10 + 8
+		return gray, gray, gray
+	}
+
+	n -= 16
+	r = (n / 36) * 51
+	g = ((n % 36) / 6) * 51
+	b = (n % 6) * 51
+	return
+}
+
+func IsLightANSI(n int) bool {
+	r, g, b := ansi256ToRGB(n)
+
+	luminance :=
+		0.299*float64(r) +
+			0.587*float64(g) +
+			0.114*float64(b)
+
+	return luminance > 186
+}

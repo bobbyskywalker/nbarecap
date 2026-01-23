@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"nbarecap/pkg/nba_api/models"
 	"strconv"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
@@ -11,8 +12,15 @@ import (
 
 func playerStatsToRow(player *models.PlayerV3) table.Row {
 	playerStats := player.Statistics
+
+	commentOrMinutes := playerStats.Minutes
+	if playerStats.Minutes == "" {
+		commentOrMinutes = strings.Split(player.Comment, " ")[0]
+	}
+
 	return table.Row{
 		player.NameI,
+		commentOrMinutes,
 		strconv.Itoa(playerStats.Points),
 		strconv.Itoa(playerStats.ReboundsTotal),
 		strconv.Itoa(playerStats.Assists),
@@ -25,10 +33,13 @@ func playerStatsToRow(player *models.PlayerV3) table.Row {
 }
 
 func appendTeamIdRow(rows []table.Row, team models.TeamV3) []table.Row {
+	color := TeamColors[team.TeamTricode]
+
 	rows = append(rows, table.Row{"", "", "", "", ""})
 	rows = append(rows, table.Row{
-		fmt.Sprintf("— %s (%s) —", team.TeamName, team.TeamTricode),
-		"", "", "",
+		lipgloss.NewStyle().Foreground(lipgloss.Color(color)).Render(
+			fmt.Sprintf("— %s (%s) —", team.TeamName, team.TeamTricode),
+			"", "", ""),
 	})
 	return rows
 }
@@ -55,7 +66,8 @@ func boxScoreToRows(boxScore *models.BoxScoreTraditionalV3, showingAway bool) []
 
 func newBoxScoreTable(boxScore *models.BoxScoreTraditionalV3, showingAway bool) table.Model {
 	columns := []table.Column{
-		{Title: "Player", Width: 20},
+		{Title: "Player", Width: 40},
+		{Title: "MIN", Width: 10},
 		{Title: "PTS", Width: 5},
 		{Title: "REB", Width: 5},
 		{Title: "AST", Width: 5},
@@ -72,7 +84,7 @@ func newBoxScoreTable(boxScore *models.BoxScoreTraditionalV3, showingAway bool) 
 		table.WithRows(rows),
 		table.WithFocused(true),
 	)
-	/* TODO: table styles & colors */
+
 	t.SetStyles(table.Styles{
 		Header:   gamesListHeaderStyle,
 		Cell:     lipgloss.Style{}.Italic(true),
@@ -101,4 +113,42 @@ func (m appModel) renderBoxScoreView(header string, footer string) string {
 		lipgloss.Center,
 		header+"\n"+boxView+"\n"+footer,
 	)
+}
+
+func buildBoxScoreHeader(m appModel) string {
+	homeTricode := m.currentBoxScore.HomeTeam.TeamTricode
+	awayTricode := m.currentBoxScore.AwayTeam.TeamTricode
+
+	homePts := m.currentBoxScore.HomeTeam.Statistics.Points
+	awayPts := m.currentBoxScore.AwayTeam.Statistics.Points
+
+	away := createBigTeamBadgeStyle(awayTricode).Render(awayTricode)
+	home := createBigTeamBadgeStyle(homeTricode).Render(homeTricode)
+
+	scoreText := strconv.Itoa(awayPts) + "  —  " + strconv.Itoa(homePts)
+	score := boxScoreHeaderScoreStyle.Render(scoreText)
+
+	scoreHeader := boxScoreHeaderRowStyle.Render(
+		lipgloss.JoinHorizontal(lipgloss.Center, away, "  ", score, "  ", home),
+	)
+
+	statusText := "PRE-GAME"
+	if homePts != awayPts != false {
+		statusText = "FINAL"
+	}
+
+	statusHeader := boxScoreHeaderStatusPillStyle.Render(strings.ToUpper(statusText))
+
+	dateHeader := boxScoreHeaderDateStyle.Render(m.date.Format(dateFormat))
+	return lipgloss.JoinVertical(lipgloss.Center, scoreHeader, statusHeader, dateHeader)
+}
+
+func buildBoxScoreFooter(m appModel) string {
+	var dots string
+	if m.showingAway {
+		dots = dotInactiveStyle.Render(dotInactiveIcon) + dotActiveStyle.Render(dotActiveIcon)
+	} else {
+		dots = dotActiveStyle.Render(dotActiveIcon) + dotInactiveStyle.Render(dotInactiveIcon)
+	}
+	return lipgloss.JoinVertical(lipgloss.Center, dots+"\n"+"<-/-> switch teams")
 }
