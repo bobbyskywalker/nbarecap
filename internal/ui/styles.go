@@ -30,7 +30,7 @@ var TeamColors = map[string]string{
 	"DET": "124",
 	"GSW": "227",
 	"HOU": "160",
-	"IND": "21",
+	"IND": "220",
 	"LAC": "12",
 	"LAL": "93",
 	"MEM": "69",
