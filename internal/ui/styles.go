@@ -14,7 +14,6 @@ const (
 	coolGray        = "#E5E7EB"
 	red             = "#C8102E"
 	blue            = "#0057B8"
-	black           = "#000000"
 	dotInactiveIcon = "○"
 	dotActiveIcon   = "●"
 )
@@ -62,14 +61,24 @@ var (
 				Bold(true).
 				Foreground(lipgloss.Color(gray))
 
-	itemStyle = lipgloss.NewStyle().
-			PaddingLeft(4).
-			Foreground(lipgloss.Color(coolGray))
+	cardStyle = lipgloss.NewStyle().
+			Width(cardWidth).
+			Padding(0, 1).
+			Align(lipgloss.Center)
 
 	selectedItemStyle = lipgloss.NewStyle().
 				PaddingLeft(2).
 				Foreground(lipgloss.Color(red)).
 				Bold(true)
+
+	gameEndedStatusStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#22C55E"))
+
+	gameInProgressStatusStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#EF4444")).Bold(true)
+
+	statusAndArenaSeparatorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(gray)).Render(" • ")
+
+	arenaStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#9CA3AF"))
 
 	listBoxStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
@@ -81,13 +90,6 @@ var (
 			PaginationStyle.
 			PaddingLeft(4).
 			Foreground(lipgloss.Color("#9CA3AF"))
-
-	/* Table styling */
-	homeTeamBadgeStyle = lipgloss.NewStyle().
-				Bold(true).
-				Padding(0, 1).
-				Background(lipgloss.Color(coolGray)).
-				Foreground(lipgloss.Color(black))
 
 	/* boxScore header styling */
 	boxScoreHeaderRowStyle = lipgloss.NewStyle().
