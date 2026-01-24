@@ -121,7 +121,7 @@ func GetAllGamesForDate(date *time.Time) ([]models.GameInfoFormatted, error) {
 	}
 
 	client := clients.NewNbaApiClient()
-	err := client.FetchBoxScoreTraditionalV3(dateStr)
+	err := client.FetchScoreBoardV2(dateStr)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Error fetching box score for date %s: %v", dateStr, err))
 	}

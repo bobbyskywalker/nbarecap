@@ -6,7 +6,7 @@ import (
 
 const scoreBoardV2UrlFormat = "scoreboardv2?GameDate=%s&LeagueID=00&DayOffset=0"
 
-func (apiClient *NbaApiClient) fetchScoreBoardV2(date string) error {
+func (apiClient *NbaApiClient) FetchScoreBoardV2(date string) error {
 	url := apiClient.baseUrl + apiClient.statsSuffix + fmt.Sprintf(scoreBoardV2UrlFormat, date)
 
 	err := sendCommonGetRequest(apiClient, url)
