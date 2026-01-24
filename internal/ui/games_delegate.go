@@ -14,7 +14,7 @@ const (
 	scoreFormat     = "%3d - %-3d"
 	emptyScoreStr   = "   @   "
 	cardWidth       = 50
-	lineWidth       = 40 // fixed width for both lines
+	lineWidth       = 40
 	gameEndedStatus = "final"
 	halftimeStatus  = "half"
 	quarterIdAlias  = "Q"
