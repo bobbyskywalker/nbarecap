@@ -10,6 +10,11 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const (
+	preGameStatus  = "PRE-GAME"
+	boxScoreManual = "<-/-> switch teams"
+)
+
 func playerStatsToRow(player *models.PlayerV3) table.Row {
 	playerStats := player.Statistics
 
@@ -132,7 +137,7 @@ func buildBoxScoreHeader(m appModel) string {
 		lipgloss.JoinHorizontal(lipgloss.Center, away, "  ", score, "  ", home),
 	)
 
-	statusText := "PRE-GAME"
+	statusText := preGameStatus
 	if homePts != awayPts != false {
 		statusText = "FINAL"
 	}
@@ -150,5 +155,5 @@ func buildBoxScoreFooter(m appModel) string {
 	} else {
 		dots = dotActiveStyle.Render(dotActiveIcon) + dotInactiveStyle.Render(dotInactiveIcon)
 	}
-	return lipgloss.JoinVertical(lipgloss.Center, dots+"\n"+"<-/-> switch teams")
+	return lipgloss.JoinVertical(lipgloss.Center, dots+"\n"+boxScoreManual)
 }

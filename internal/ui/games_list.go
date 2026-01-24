@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"strings"
+	"nbarecap/internal/nba"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -9,12 +9,13 @@ import (
 )
 
 const (
-	listHeight   = 10
-	defaultWidth = 20
+	listHeight   = 25
+	defaultWidth = 120
 )
 
 func newGameList() list.Model {
-	l := list.New([]list.Item{}, gameItemDelegate{}, defaultWidth, listHeight)
+	delegate := gameItemDelegate{}
+	l := list.New([]list.Item{}, delegate, defaultWidth, listHeight)
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
 	l.SetShowHelp(true)
@@ -25,18 +26,23 @@ func newGameList() list.Model {
 
 func (m appModel) buildBaseGameInfoList() tea.Cmd {
 	return func() tea.Msg {
-		scores, err := m.fetchScoresCmd()
+		games, err := nba.GetAllGamesForDate(&m.date)
 		if err != nil {
 			return baseGameInfoMsg{nil, err}
 		}
 
-		items := make([]list.Item, 0, len(scores))
-		for i, score := range scores {
-			if i == 0 {
-				continue
-			}
-			lines := strings.Split(score.GameInfo, "\n")
-			items = append(items, gameInfoItem{score.GameId, lines[0]})
+		items := make([]list.Item, 0, len(games))
+		for _, g := range games {
+			items = append(items, gameInfoItem{
+				id:       g.GameID,
+				awayAbbr: g.Away.Abbr,
+				homeAbbr: g.Home.Abbr,
+				awayPts:  g.Away.Pts,
+				homePts:  g.Home.Pts,
+				status:   g.Status,
+				arena:    g.Arena,
+				tv:       g.NatTV,
+			})
 		}
 		return baseGameInfoMsg{items: items, err: nil}
 	}
@@ -50,6 +56,6 @@ func (m appModel) renderGamesView(header string, footer string) string {
 		m.termHeight,
 		lipgloss.Center,
 		lipgloss.Center,
-		header+"\n"+tableView+"\n"+footer,
+		header+"\n\n"+tableView+"\n\n"+footer,
 	)
 }

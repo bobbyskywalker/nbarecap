@@ -30,11 +30,10 @@ const (
 /* Models */
 type appModel struct {
 	/* Games list data */
-	date       time.Time
-	gameScores []models.GameInfoFormatted
-	numGames   int
-	list       list.Model
-	choice     *gameInfoItem
+	date     time.Time
+	numGames int
+	list     list.Model
+	choice   *gameInfoItem
 
 	/* Box score data */
 	boxTable        table.Model
@@ -52,8 +51,14 @@ type appModel struct {
 
 /* List items */
 type gameInfoItem struct {
-	id    string
-	value string
+	id       string
+	awayAbbr string
+	homeAbbr string
+	awayPts  *int
+	homePts  *int
+	status   string
+	arena    string
+	tv       string
 }
 
 func (g gameInfoItem) FilterValue() string { return "" }
@@ -70,15 +75,6 @@ type boxScoreMsg struct {
 }
 
 /* NBA API */
-func (m appModel) fetchScoresCmd() ([]models.GameInfoFormatted, error) {
-	scores, err := nba.GetAllGamesForDate(&m.date)
-	if err != nil {
-		return nil, err
-	}
-	m.gameScores = scores
-	return scores, err
-}
-
 func (m appModel) fetchBoxScoreCmd(gameID string) tea.Cmd {
 	return func() tea.Msg {
 		bx, err := nba.GetBoxScoreForGame(gameID)
