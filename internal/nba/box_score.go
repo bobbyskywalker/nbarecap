@@ -10,12 +10,12 @@ import (
 
 func GetBoxScoreForGame(gameId string) (*models.BoxScoreTraditionalV3, error) {
 	client := clients.NewNbaApiClient()
-	boxScoreResponseBody, err := client.FetchBoxScoreTraditionalV3Json(gameId)
+	err := client.FetchBoxScoreTraditionalV3(gameId)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Error fetching box score for game %s: %v", gameId, err))
 	}
 	var boxScore models.BoxScoreTraditionalV3Response
-	err = json.Unmarshal(boxScoreResponseBody, &boxScore)
+	err = json.Unmarshal(client.Response.Json, &boxScore)
 	if err != nil {
 		return nil, err
 	}

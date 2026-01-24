@@ -1,6 +1,7 @@
 package clients
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,10 +13,23 @@ import (
 
 const defaultTimeout = 20 * time.Second
 
+type NbaApiResponse struct {
+	ResultSets map[string]any
+	Json       json.RawMessage
+}
+
+func newNbaApiResponse() *NbaApiResponse {
+	return &NbaApiResponse{
+		ResultSets: make(map[string]any),
+		Json:       nil,
+	}
+}
+
 type NbaApiClient struct {
 	baseUrl     string
 	statsSuffix string
 	httpClient  *http.Client
+	Response    *NbaApiResponse
 }
 
 func NewNbaApiClient() *NbaApiClient {
@@ -23,6 +37,7 @@ func NewNbaApiClient() *NbaApiClient {
 		baseUrl:     "https://stats.nba.com/",
 		statsSuffix: "stats/",
 		httpClient:  &http.Client{Timeout: defaultTimeout},
+		Response:    newNbaApiResponse(),
 	}
 }
 
@@ -34,41 +49,33 @@ func setCommonRequestHeaders(req *http.Request) {
 	req.Header.Set("Origin", "https://www.nba.com")
 }
 
-// TODO: refactor for two ways of fetching
+func sendCommonGetRequest(apiClient *NbaApiClient, url string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
 
-func getCommonJsonResponse(apiClient *NbaApiClient, request *http.Request) (json.RawMessage, error) {
-	response, err := apiClient.httpClient.Do(request)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		return err
+	}
+	setCommonRequestHeaders(req)
+
+	response, err := apiClient.httpClient.Do(req)
+	if err != nil {
+		return err
 	}
 	defer response.Body.Close()
 
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	if response.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("nba stats HTTP %d", response.StatusCode))
+		return errors.New(fmt.Sprintf("nba stats HTTP %d", response.StatusCode))
 	}
-	return body, nil
-}
-
-func getResultSetsFromJson(apiClient *NbaApiClient, request *http.Request) (map[string]any, error) {
-	response, err := apiClient.httpClient.Do(request)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("nba stats HTTP %d", response.StatusCode))
-	}
+	apiClient.Response.Json = body
+	apiClient.Response.ResultSets, err = mappers.MapResultSetsToResponseMap(body)
 
-	return mappers.MapResultSetsToResponseMap(body)
+	return err
 }

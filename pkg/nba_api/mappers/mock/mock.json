@@ -1,0 +1,27 @@
+{
+  "resultSets": [
+    {
+      "name": "TeamStats",
+      "headers": ["TEAM_ID", "TEAM_NAME", "PTS", "AST", "WINNER"],
+      "rowSet": [
+        [1610612747, "Lakers", 112, 26, true],
+        [1610612744, "Warriors", 108, 29]
+      ]
+    },
+    {
+      "name": "Players",
+      "headers": ["PLAYER_ID", "PLAYER_NAME", "MIN", "PTS"],
+      "rowSet": [
+        [2544, "LeBron James", "35:12", 28],
+        [201939, "Stephen Curry", "34:01", 30]
+      ]
+    }
+  ],
+  "resultSet": {
+    "name": "GameInfo",
+    "headers": ["GAME_ID", "SEASON", "START_TIME_UTC", "ATTENDANCE"],
+    "rowSet": [
+      ["0022300001", "2023-24", "2024-01-15T03:00:00Z", 18997]
+    ]
+  }
+}
