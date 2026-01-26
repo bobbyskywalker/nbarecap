@@ -11,29 +11,45 @@ import (
 )
 
 const (
-	preGameStatus  = "PRE-GAME"
-	boxScoreManual = "<-/-> switch teams"
+	preGameStatus    = "PRE-GAME"
+	boxScoreManual   = "<-/-> switch teams"
+	statModeManual   = "'m' switch stats mode"
+	goBackManual     = "'esc' go back"
+	percentageFormat = "%.1f%s"
 )
 
-func playerStatsToRow(player *models.PlayerV3) table.Row {
+func playerStatsToRow(player *models.PlayerV3, showingPercentages bool) table.Row {
 	playerStats := player.Statistics
-
 	commentOrMinutes := playerStats.Minutes
 	if playerStats.Minutes == "" {
 		commentOrMinutes = strings.Split(player.Comment, " ")[0]
 	}
 
+	if !showingPercentages {
+		return table.Row{
+			player.NameI,
+			commentOrMinutes,
+			strconv.Itoa(playerStats.Points),
+			strconv.Itoa(playerStats.ReboundsTotal),
+			strconv.Itoa(playerStats.Assists),
+			strconv.Itoa(playerStats.Steals),
+			strconv.Itoa(playerStats.Blocks),
+			strconv.Itoa(playerStats.Turnovers),
+			strconv.Itoa(playerStats.FoulsPersonal),
+			strconv.FormatFloat(playerStats.PlusMinusPoints, 'f', 1, 64),
+		}
+	}
 	return table.Row{
 		player.NameI,
-		commentOrMinutes,
-		strconv.Itoa(playerStats.Points),
-		strconv.Itoa(playerStats.ReboundsTotal),
-		strconv.Itoa(playerStats.Assists),
-		strconv.Itoa(playerStats.Steals),
-		strconv.Itoa(playerStats.Blocks),
-		strconv.Itoa(playerStats.Turnovers),
-		strconv.Itoa(playerStats.FoulsPersonal),
-		strconv.FormatFloat(playerStats.PlusMinusPoints, 'f', 1, 64),
+		strconv.Itoa(playerStats.FieldGoalsMade),
+		strconv.Itoa(playerStats.FieldGoalsAttempted),
+		fmt.Sprintf(percentageFormat, playerStats.FieldGoalsPercentage*100, "%"),
+		strconv.Itoa(playerStats.ThreePointersMade),
+		strconv.Itoa(playerStats.ThreePointersAttempted),
+		fmt.Sprintf(percentageFormat, playerStats.ThreePointersPercentage*100, "%"),
+		strconv.Itoa(playerStats.FreeThrowsMade),
+		strconv.Itoa(playerStats.FreeThrowsAttempted),
+		fmt.Sprintf(percentageFormat, playerStats.FreeThrowsPercentage*100, "%"),
 	}
 }
 
@@ -49,7 +65,7 @@ func appendTeamIdRow(rows []table.Row, team models.TeamV3) []table.Row {
 	return rows
 }
 
-func boxScoreToRows(boxScore *models.BoxScoreTraditionalV3, showingAway bool) []table.Row {
+func boxScoreToRows(boxScore *models.BoxScoreTraditionalV3, showingAway bool, showingPercentages bool) []table.Row {
 	var players []models.PlayerV3
 	var team models.TeamV3
 
@@ -64,25 +80,43 @@ func boxScoreToRows(boxScore *models.BoxScoreTraditionalV3, showingAway bool) []
 	rows := make([]table.Row, 0, len(players)+1)
 	rows = appendTeamIdRow(rows, team)
 	for _, p := range players {
-		rows = append(rows, playerStatsToRow(&p))
+		rows = append(rows, playerStatsToRow(&p, showingPercentages))
 	}
 	return rows
 }
 
-func newBoxScoreTable(boxScore *models.BoxScoreTraditionalV3, showingAway bool) table.Model {
-	columns := []table.Column{
-		{Title: "Player", Width: 40},
-		{Title: "MIN", Width: 10},
-		{Title: "PTS", Width: 5},
-		{Title: "REB", Width: 5},
-		{Title: "AST", Width: 5},
-		{Title: "STL", Width: 5},
-		{Title: "BLK", Width: 5},
-		{Title: "TOV", Width: 5},
-		{Title: "PF", Width: 5},
-		{Title: "+/-", Width: 5},
+func resolveColumnNames(showingPercentages bool) []table.Column {
+	if !showingPercentages {
+		return []table.Column{
+			{Title: "Player", Width: 40},
+			{Title: "MIN", Width: 10},
+			{Title: "PTS", Width: 5},
+			{Title: "REB", Width: 5},
+			{Title: "AST", Width: 5},
+			{Title: "STL", Width: 5},
+			{Title: "BLK", Width: 5},
+			{Title: "TOV", Width: 5},
+			{Title: "PF", Width: 5},
+			{Title: "+/-", Width: 5},
+		}
 	}
-	rows := boxScoreToRows(boxScore, showingAway)
+	return []table.Column{
+		{Title: "Player", Width: 40},
+		{Title: "FGM", Width: 5},
+		{Title: "FGA", Width: 5},
+		{Title: "FG%", Width: 7},
+		{Title: "3PM", Width: 5},
+		{Title: "3PA", Width: 5},
+		{Title: "3P%", Width: 7},
+		{Title: "FTM", Width: 5},
+		{Title: "FTA", Width: 5},
+		{Title: "FT%", Width: 7},
+	}
+}
+
+func newBoxScoreTable(boxScore *models.BoxScoreTraditionalV3, showingAway bool, showingPercentages bool) table.Model {
+	columns := resolveColumnNames(showingPercentages)
+	rows := boxScoreToRows(boxScore, showingAway, showingPercentages)
 
 	t := table.New(
 		table.WithColumns(columns),
@@ -150,10 +184,11 @@ func buildBoxScoreHeader(m appModel) string {
 
 func buildBoxScoreFooter(m appModel) string {
 	var dots string
-	if m.showingAway {
+	if !m.showingAway {
 		dots = dotInactiveStyle.Render(dotInactiveIcon) + dotActiveStyle.Render(dotActiveIcon)
 	} else {
 		dots = dotActiveStyle.Render(dotActiveIcon) + dotInactiveStyle.Render(dotInactiveIcon)
 	}
-	return lipgloss.JoinVertical(lipgloss.Center, dots+"\n"+boxScoreManual)
+	manuals := manualTextStyle.Render(" • " + boxScoreManual + " • " + statModeManual + " • " + goBackManual)
+	return lipgloss.JoinVertical(lipgloss.Center, dots+"\n\n"+manuals)
 }

@@ -42,6 +42,7 @@ func updateGamesState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 			}
 			m.choice = &it
 			m.showingAway = true
+			m.showingPercentages = false
 			m.state = boxScore
 			m.err = nil
 			m.currentBoxScore = nil
@@ -64,7 +65,7 @@ func updateBoxScoreState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 		}
 		m.err = nil
 		m.currentBoxScore = msg.score
-		m.boxTable = newBoxScoreTable(msg.score, m.showingAway)
+		m.boxTable = newBoxScoreTable(msg.score, m.showingAway, m.showingPercentages)
 		return m, nil
 
 	case tea.KeyMsg:
@@ -75,7 +76,13 @@ func updateBoxScoreState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 		case "left", "right":
 			m.showingAway = !m.showingAway
 			if m.currentBoxScore != nil {
-				m.boxTable = newBoxScoreTable(m.currentBoxScore, m.showingAway)
+				m.boxTable = newBoxScoreTable(m.currentBoxScore, m.showingAway, m.showingPercentages)
+			}
+			return m, nil
+		case "m":
+			m.showingPercentages = !m.showingPercentages
+			if m.currentBoxScore != nil {
+				m.boxTable = newBoxScoreTable(m.currentBoxScore, m.showingAway, m.showingPercentages)
 			}
 			return m, nil
 		}

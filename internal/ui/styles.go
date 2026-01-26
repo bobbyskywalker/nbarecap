@@ -116,6 +116,9 @@ var (
 				Faint(true).
 				MarginTop(1)
 
+	manualTextStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("243"))
+
 	/* controls styling */
 	dotActiveStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color(goldenYellow)).
