@@ -36,9 +36,10 @@ type appModel struct {
 	choice   *gameInfoItem
 
 	/* Box score data */
-	boxTable        table.Model
-	currentBoxScore *models.BoxScoreTraditionalV3
-	showingAway     bool
+	boxTable           table.Model
+	currentBoxScore    *models.BoxScoreTraditionalV3
+	showingAway        bool
+	showingPercentages bool
 
 	/* Viewport params */
 	termWidth  int
