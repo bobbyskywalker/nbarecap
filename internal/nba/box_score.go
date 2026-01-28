@@ -16,8 +16,5 @@ func GetBoxScoreForGame(gameId string) (*models.BoxScoreTraditionalV3, error) {
 	}
 	var boxScore models.BoxScoreTraditionalV3Response
 	err = json.Unmarshal(client.Response.Json, &boxScore)
-	if err != nil {
-		return nil, err
-	}
-	return &boxScore.BoxScoreTraditional, nil
+	return &boxScore.BoxScoreTraditional, err
 }
