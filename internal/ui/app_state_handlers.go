@@ -37,6 +37,7 @@ func updateViewSelectionState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 			case "Play By Play":
 				m.state = playByPlay
 				m.err = nil
+				m.selectedPeriod = 1
 				m.currentPlayByPlay = nil
 				return m, m.fetchPlayByPlayCmd(m.choice.id)
 			}
@@ -127,6 +128,16 @@ func updateBoxScoreState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 	return m, cmd
 }
 
+func updatePeriod(period int, delta int, maxPeriod int) int {
+	period += delta
+	if period < 1 {
+		period = 1
+	} else if period > maxPeriod {
+		period = maxPeriod
+	}
+	return period
+}
+
 func updatePlayByPlayState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 	var cmd tea.Cmd
 	m.playByPlayTable, cmd = m.playByPlayTable.Update(msg)
@@ -139,13 +150,22 @@ func updatePlayByPlayState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 		}
 		m.err = nil
 		m.currentPlayByPlay = msg.content
-		m.playByPlayTable = newPlayByPlayTable(msg.content)
+		m.maxPeriod = getMaxPeriod(msg.content)
+		m.playByPlayTable = newPlayByPlayTable(msg.content, m.selectedPeriod)
 		return m, nil
 
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc", "backspace":
 			m.state = games
+			return m, nil
+		case "left":
+			m.selectedPeriod = updatePeriod(m.selectedPeriod, -1, m.maxPeriod)
+			m.playByPlayTable = newPlayByPlayTable(m.currentPlayByPlay, m.selectedPeriod)
+			return m, nil
+		case "right":
+			m.selectedPeriod = updatePeriod(m.selectedPeriod, 1, m.maxPeriod)
+			m.playByPlayTable = newPlayByPlayTable(m.currentPlayByPlay, m.selectedPeriod)
 			return m, nil
 		}
 		return m, cmd

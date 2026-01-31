@@ -42,6 +42,8 @@ type appModel struct {
 	/* Play By Play data */
 	playByPlayTable   table.Model
 	currentPlayByPlay *models.PlayByPlayV3
+	selectedPeriod    int
+	maxPeriod         int
 
 	/* Box score data */
 	boxTable           table.Model
@@ -112,14 +114,13 @@ func (m appModel) View() string {
 	case viewSelection:
 		return m.renderViewSelectionMenu()
 	case boxScore:
-		var header string
-		if m.currentBoxScore != nil {
-			header = buildBoxScoreHeader(m)
-		}
+		header = buildCommonInfoGameHeader(m)
 		footer = buildBoxScoreFooter(m)
 		return m.renderBoxScoreView(header, footer)
 	case playByPlay:
-		return m.renderPlayByPlayView()
+		header = buildCommonInfoGameHeader(m)
+		footer = buildPlayByPlayScoreFooter(m)
+		return m.renderPlayByPlayView(header, footer)
 	default:
 		return ""
 	}
