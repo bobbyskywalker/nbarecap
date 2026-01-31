@@ -14,7 +14,6 @@ import (
 const (
 	dateFormat               = "2006-01-02"
 	dayStep                  = 1
-	boxScoreLoadingMsg       = "\nLoading box score...\n\n(esc to go back)"
 	gamesListHeaderMsgFormat = "NBARECAP • %s"
 	gamesListFooterMsgFormat = "Showing %d games"
 )
@@ -39,6 +38,10 @@ type appModel struct {
 	/* viewSelection data */
 	optionsList  list.Model
 	selectedView string
+
+	/* Play By Play data */
+	playByPlayTable   table.Model
+	currentPlayByPlay *models.PlayByPlayV3
 
 	/* Box score data */
 	boxTable           table.Model
@@ -79,11 +82,14 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case games:
 		return updateGamesState(m, msg)
 
+	case viewSelection:
+		return updateViewSelectionState(m, msg)
+
 	case boxScore:
 		return updateBoxScoreState(m, msg)
 
-	case viewSelection:
-		return updateViewSelectionState(m, msg)
+	case playByPlay:
+		return updatePlayByPlayState(m, msg)
 
 	default:
 		panic("unknown state")
@@ -103,6 +109,8 @@ func (m appModel) View() string {
 		header = gamesListHeaderStyle.Render(fmt.Sprintf(gamesListHeaderMsgFormat, m.date.Format(dateFormat)))
 		footer = gamesListFooterStyle.Render(fmt.Sprintf(gamesListFooterMsgFormat, m.numGames))
 		return m.renderGamesView(header, footer)
+	case viewSelection:
+		return m.renderViewSelectionMenu()
 	case boxScore:
 		var header string
 		if m.currentBoxScore != nil {
@@ -110,8 +118,8 @@ func (m appModel) View() string {
 		}
 		footer = buildBoxScoreFooter(m)
 		return m.renderBoxScoreView(header, footer)
-	case viewSelection:
-		return m.renderViewSelectionMenu()
+	case playByPlay:
+		return m.renderPlayByPlayView()
 	default:
 		return ""
 	}

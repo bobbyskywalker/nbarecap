@@ -13,11 +13,12 @@ import (
 )
 
 const (
-	preGameStatus    = "PRE-GAME"
-	boxScoreManual   = "<-/-> switch teams"
-	statModeManual   = "'m' switch stats mode"
-	goBackManual     = "'esc' go back"
-	percentageFormat = "%.1f%s"
+	preGameStatus      = "PRE-GAME"
+	boxScoreManual     = "<-/-> switch teams"
+	statModeManual     = "'m' switch stats mode"
+	goBackManual       = "'esc' go back"
+	percentageFormat   = "%.1f%s"
+	boxScoreLoadingMsg = "\nLoading box score...\n\n(esc to go back)"
 )
 
 type boxScoreMsg struct {

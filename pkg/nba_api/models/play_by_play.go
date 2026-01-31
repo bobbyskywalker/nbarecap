@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type PlayByPlayResponse struct {
+type PlayByPlayV3 struct {
 	Meta Meta `json:"meta"`
 	Game Game `json:"game"`
 }

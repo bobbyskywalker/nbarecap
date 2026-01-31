@@ -35,8 +35,10 @@ func updateViewSelectionState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 				m.currentBoxScore = nil
 				return m, m.fetchBoxScoreCmd(m.choice.id)
 			case "Play By Play":
-				/* todo: handle playByPlay state */
-				return m, nil
+				m.state = playByPlay
+				m.err = nil
+				m.currentPlayByPlay = nil
+				return m, m.fetchPlayByPlayCmd(m.choice.id)
 			}
 		}
 	}
@@ -122,6 +124,31 @@ func updateBoxScoreState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 			return m, nil
 		}
 	}
+	return m, cmd
+}
 
+func updatePlayByPlayState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
+	var cmd tea.Cmd
+	m.playByPlayTable, cmd = m.playByPlayTable.Update(msg)
+
+	switch msg := msg.(type) {
+	case playByPlayMsg:
+		if msg.err != nil {
+			m.err = msg.err
+			return m, nil
+		}
+		m.err = nil
+		m.currentPlayByPlay = msg.content
+		m.playByPlayTable = newPlayByPlayTable(msg.content)
+		return m, nil
+
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "esc", "backspace":
+			m.state = games
+			return m, nil
+		}
+		return m, cmd
+	}
 	return m, cmd
 }
