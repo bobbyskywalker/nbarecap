@@ -6,13 +6,53 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+func updateViewSelectionState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
+	switch msg := msg.(type) {
+	case viewSelectionMsg:
+		if msg.err != nil {
+			m.err = msg.err
+			return m, nil
+		}
+		m.optionsList.SetItems(msg.items)
+		return m, nil
+
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "esc", "backspace":
+			m.state = games
+			return m, nil
+		case "enter":
+			selected := m.optionsList.SelectedItem()
+			if selected == nil {
+				return m, nil
+			}
+			switch selected.(viewSelectionItem).value {
+			case "Box Score":
+				m.showingAway = true
+				m.showingPercentages = false
+				m.state = boxScore
+				m.err = nil
+				m.currentBoxScore = nil
+				return m, m.fetchBoxScoreCmd(m.choice.id)
+			case "Play By Play":
+				/* todo: handle playByPlay state */
+				return m, nil
+			}
+		}
+	}
+
+	var cmd tea.Cmd
+	m.optionsList, cmd = m.optionsList.Update(msg)
+	return m, cmd
+}
+
 func updateDate(date time.Time, dateDelta int) time.Time {
 	return date.AddDate(0, 0, dateDelta)
 }
 
 func updateGamesState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
+	m.gamesList, cmd = m.gamesList.Update(msg)
 
 	switch msg := msg.(type) {
 	case baseGameInfoMsg:
@@ -21,7 +61,7 @@ func updateGamesState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 			return m, nil
 		}
 		m.err = nil
-		m.list.SetItems(msg.items)
+		m.gamesList.SetItems(msg.items)
 		m.numGames = len(msg.items)
 		return m, nil
 
@@ -36,18 +76,13 @@ func updateGamesState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 			return m, m.buildBaseGameInfoList()
 
 		case "enter":
-			it, ok := m.list.SelectedItem().(gameInfoItem)
+			it, ok := m.gamesList.SelectedItem().(gameInfoItem)
 			if !ok {
 				return m, cmd
 			}
 			m.choice = &it
-			m.showingAway = true
-			m.showingPercentages = false
-			m.state = boxScore
-			m.err = nil
-			m.currentBoxScore = nil
-
-			return m, tea.Batch(cmd, m.fetchBoxScoreCmd(it.id))
+			m.state = viewSelection
+			return m, m.buildViewSelectionMenu()
 		}
 	}
 	return m, cmd

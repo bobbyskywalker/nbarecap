@@ -2,11 +2,13 @@ package ui
 
 import (
 	"fmt"
+	"nbarecap/internal/nba"
 	"nbarecap/pkg/nba_api/models"
 	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -17,6 +19,21 @@ const (
 	goBackManual     = "'esc' go back"
 	percentageFormat = "%.1f%s"
 )
+
+type boxScoreMsg struct {
+	score *models.BoxScoreTraditionalV3
+	err   error
+}
+
+func (m appModel) fetchBoxScoreCmd(gameID string) tea.Cmd {
+	return func() tea.Msg {
+		bx, err := nba.GetBoxScoreForGame(gameID)
+		if err != nil {
+			return boxScoreMsg{err: err}
+		}
+		return boxScoreMsg{score: bx}
+	}
+}
 
 func playerStatsToRow(player *models.PlayerV3, showingPercentages bool) table.Row {
 	playerStats := player.Statistics

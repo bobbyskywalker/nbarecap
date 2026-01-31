@@ -3,7 +3,6 @@ package ui
 import (
 	"fmt"
 	"log"
-	"nbarecap/internal/nba"
 	"nbarecap/pkg/nba_api/models"
 	"time"
 
@@ -24,16 +23,22 @@ type appState int
 
 const (
 	games appState = iota
+	viewSelection
 	boxScore
+	playByPlay
 )
 
 /* Models */
 type appModel struct {
-	/* Games list data */
-	date     time.Time
-	numGames int
-	list     list.Model
-	choice   *gameInfoItem
+	/* Games gamesList data */
+	date      time.Time
+	numGames  int
+	gamesList list.Model
+	choice    *gameInfoItem
+
+	/* viewSelection data */
+	optionsList  list.Model
+	selectedView string
 
 	/* Box score data */
 	boxTable           table.Model
@@ -50,44 +55,6 @@ type appModel struct {
 	err   error
 }
 
-/* List items */
-type gameInfoItem struct {
-	id       string
-	awayAbbr string
-	homeAbbr string
-	awayPts  *int
-	homePts  *int
-	status   string
-	arena    string
-	tv       string
-}
-
-func (g gameInfoItem) FilterValue() string { return "" }
-
-/* Tea messages */
-type baseGameInfoMsg struct {
-	items []list.Item
-	err   error
-}
-
-type boxScoreMsg struct {
-	score *models.BoxScoreTraditionalV3
-	err   error
-}
-
-/* NBA API */
-func (m appModel) fetchBoxScoreCmd(gameID string) tea.Cmd {
-	return func() tea.Msg {
-		bx, err := nba.GetBoxScoreForGame(gameID)
-		if err != nil {
-			return boxScoreMsg{err: err}
-		}
-		return boxScoreMsg{score: bx}
-	}
-}
-
-/* Tea program */
-
 func (m appModel) Init() tea.Cmd {
 	return m.buildBaseGameInfoList()
 }
@@ -97,7 +64,7 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		m.termWidth, m.termHeight = msg.Width, msg.Height
-		m.list.SetWidth(msg.Width)
+		m.gamesList.SetWidth(msg.Width)
 		return m, nil
 
 	case tea.KeyMsg:
@@ -114,6 +81,9 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case boxScore:
 		return updateBoxScoreState(m, msg)
+
+	case viewSelection:
+		return updateViewSelectionState(m, msg)
 
 	default:
 		panic("unknown state")
@@ -140,6 +110,8 @@ func (m appModel) View() string {
 		}
 		footer = buildBoxScoreFooter(m)
 		return m.renderBoxScoreView(header, footer)
+	case viewSelection:
+		return m.renderViewSelectionMenu()
 	default:
 		return ""
 	}
@@ -153,8 +125,9 @@ func StartUi(date time.Time) {
 	defer f.Close()
 
 	m := appModel{
-		date: date,
-		list: newGameList(),
+		date:        date,
+		gamesList:   newGameList(),
+		optionsList: newViewSelectionMenu(),
 	}
 
 	p := tea.NewProgram(m, tea.WithAltScreen())
