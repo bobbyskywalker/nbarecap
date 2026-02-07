@@ -41,7 +41,7 @@ func newViewSelectionMenu() list.Model {
 	return l
 }
 
-func (m appModel) buildViewSelectionMenu() tea.Cmd {
+func buildViewSelectionMenu() tea.Cmd {
 	return func() tea.Msg {
 		var items []list.Item
 		items = append(items, viewSelectionItem{value: "Box Score"})
@@ -53,7 +53,7 @@ func (m appModel) buildViewSelectionMenu() tea.Cmd {
 	}
 }
 
-func (m appModel) renderViewSelectionMenu() string {
+func renderViewSelectionMenu(m appModel) string {
 	tableView := listBoxStyle.Render(m.optionsList.View())
 
 	return lipgloss.Place(

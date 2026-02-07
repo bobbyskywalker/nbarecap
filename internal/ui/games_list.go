@@ -2,6 +2,7 @@ package ui
 
 import (
 	"nbarecap/internal/nba"
+	"time"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -42,9 +43,9 @@ func newGameList() list.Model {
 	return l
 }
 
-func (m appModel) buildBaseGameInfoList() tea.Cmd {
+func gamesListCmd(date *time.Time) tea.Cmd {
 	return func() tea.Msg {
-		games, err := nba.GetAllGamesForDate(&m.date)
+		games, err := nba.GetAllGamesForDate(date)
 		if err != nil {
 			return baseGameInfoMsg{nil, err}
 		}

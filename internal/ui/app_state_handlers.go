@@ -33,7 +33,7 @@ func updateViewSelectionState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 				m.state = boxScore
 				m.err = nil
 				m.currentBoxScore = nil
-				return m, m.fetchBoxScoreCmd(m.choice.id)
+				return m, fetchBoxScoreCmd(m.choice.id)
 			case "Play By Play":
 				m.state = playByPlay
 				m.err = nil
@@ -72,11 +72,11 @@ func updateGamesState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 		switch msg.String() {
 		case "left":
 			m.date = updateDate(m.date, -dayStep)
-			return m, m.buildBaseGameInfoList()
+			return m, gamesListCmd(&m.date)
 
 		case "right":
 			m.date = updateDate(m.date, dayStep)
-			return m, m.buildBaseGameInfoList()
+			return m, gamesListCmd(&m.date)
 
 		case "enter":
 			it, ok := m.gamesList.SelectedItem().(gameInfoItem)
@@ -85,7 +85,7 @@ func updateGamesState(m appModel, msg tea.Msg) (appModel, tea.Cmd) {
 			}
 			m.choice = &it
 			m.state = viewSelection
-			return m, m.buildViewSelectionMenu()
+			return m, buildViewSelectionMenu()
 		}
 	}
 	return m, cmd

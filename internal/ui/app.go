@@ -61,7 +61,7 @@ type appModel struct {
 }
 
 func (m appModel) Init() tea.Cmd {
-	return m.buildBaseGameInfoList()
+	return gamesListCmd(&m.date)
 }
 
 func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -112,15 +112,15 @@ func (m appModel) View() string {
 		footer = gamesListFooterStyle.Render(fmt.Sprintf(gamesListFooterMsgFormat, m.numGames))
 		return m.renderGamesView(header, footer)
 	case viewSelection:
-		return m.renderViewSelectionMenu()
+		return renderViewSelectionMenu(m)
 	case boxScore:
 		header = buildCommonInfoGameHeader(m)
 		footer = buildBoxScoreFooter(m)
-		return m.renderBoxScoreView(header, footer)
+		return renderBoxScoreView(header, footer, m)
 	case playByPlay:
 		header = buildCommonInfoGameHeader(m)
 		footer = buildPlayByPlayScoreFooter(m)
-		return m.renderPlayByPlayView(header, footer)
+		return renderPlayByPlayView(header, footer, m)
 	default:
 		return ""
 	}

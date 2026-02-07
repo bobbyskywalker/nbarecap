@@ -20,11 +20,6 @@ const (
 	overtimeFormat        = "OT%d"
 )
 
-/*
-	TODO: unique styling for this view
-	A refresh button for live score fetching
-*/
-
 type playByPlayMsg struct {
 	content *models.PlayByPlayV3
 	err     error
@@ -95,7 +90,7 @@ func newPlayByPlayTable(playByPlay *models.PlayByPlayV3, period int) table.Model
 	return t
 }
 
-func (m appModel) renderPlayByPlayView(header string, footer string) string {
+func renderPlayByPlayView(header string, footer string, m appModel) string {
 	if m.currentPlayByPlay == nil {
 		return lipgloss.Place(
 			m.termWidth,

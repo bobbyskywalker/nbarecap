@@ -26,7 +26,7 @@ type boxScoreMsg struct {
 	err   error
 }
 
-func (m appModel) fetchBoxScoreCmd(gameID string) tea.Cmd {
+func fetchBoxScoreCmd(gameID string) tea.Cmd {
 	return func() tea.Msg {
 		bx, err := nba.GetBoxScoreForGame(gameID)
 		if err != nil {
@@ -150,7 +150,7 @@ func newBoxScoreTable(boxScore *models.BoxScoreTraditionalV3, showingAway bool, 
 	return t
 }
 
-func (m appModel) renderBoxScoreView(header string, footer string) string {
+func renderBoxScoreView(header string, footer string, m appModel) string {
 	if m.currentBoxScore == nil {
 		return lipgloss.Place(
 			m.termWidth,

@@ -7,8 +7,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-/* TODO: cleanup, put this in a correct file after refactor */
-
 func buildCommonInfoGameHeader(m appModel) string {
 	homeTricode := m.choice.homeAbbr
 	awayTricode := m.choice.awayAbbr
