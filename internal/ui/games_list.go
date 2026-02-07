@@ -2,6 +2,7 @@ package ui
 
 import (
 	"nbarecap/internal/nba"
+	"time"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -9,13 +10,31 @@ import (
 )
 
 const (
-	listHeight   = 25
-	defaultWidth = 120
+	gamesListDefaultHeight = 25
+	gamesListDefaultWidth  = 120
 )
+
+type baseGameInfoMsg struct {
+	items []list.Item
+	err   error
+}
+
+type gameInfoItem struct {
+	id       string
+	awayAbbr string
+	homeAbbr string
+	awayPts  *int
+	homePts  *int
+	status   string
+	arena    string
+	tv       string
+}
+
+func (g gameInfoItem) FilterValue() string { return "" }
 
 func newGameList() list.Model {
 	delegate := gameItemDelegate{}
-	l := list.New([]list.Item{}, delegate, defaultWidth, listHeight)
+	l := list.New([]list.Item{}, delegate, gamesListDefaultWidth, gamesListDefaultHeight)
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
 	l.SetShowHelp(true)
@@ -24,9 +43,9 @@ func newGameList() list.Model {
 	return l
 }
 
-func (m appModel) buildBaseGameInfoList() tea.Cmd {
+func gamesListCmd(date *time.Time) tea.Cmd {
 	return func() tea.Msg {
-		games, err := nba.GetAllGamesForDate(&m.date)
+		games, err := nba.GetAllGamesForDate(date)
 		if err != nil {
 			return baseGameInfoMsg{nil, err}
 		}
@@ -49,7 +68,7 @@ func (m appModel) buildBaseGameInfoList() tea.Cmd {
 }
 
 func (m appModel) renderGamesView(header string, footer string) string {
-	tableView := listBoxStyle.Render(m.list.View())
+	tableView := listBoxStyle.Render(m.gamesList.View())
 
 	return lipgloss.Place(
 		m.termWidth,

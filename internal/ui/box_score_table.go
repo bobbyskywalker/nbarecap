@@ -2,21 +2,39 @@ package ui
 
 import (
 	"fmt"
+	"nbarecap/internal/nba"
 	"nbarecap/pkg/nba_api/models"
 	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
 const (
-	preGameStatus    = "PRE-GAME"
-	boxScoreManual   = "<-/-> switch teams"
-	statModeManual   = "'m' switch stats mode"
-	goBackManual     = "'esc' go back"
-	percentageFormat = "%.1f%s"
+	preGameStatus      = "PRE-GAME"
+	boxScoreManual     = "<-/-> switch teams"
+	statModeManual     = "'m' switch stats mode"
+	goBackManual       = "'esc' go back"
+	percentageFormat   = "%.1f%s"
+	boxScoreLoadingMsg = "\nLoading box score...\n\n(esc to go back)"
 )
+
+type boxScoreMsg struct {
+	score *models.BoxScoreTraditionalV3
+	err   error
+}
+
+func fetchBoxScoreCmd(gameID string) tea.Cmd {
+	return func() tea.Msg {
+		bx, err := nba.GetBoxScoreForGame(gameID)
+		if err != nil {
+			return boxScoreMsg{err: err}
+		}
+		return boxScoreMsg{score: bx}
+	}
+}
 
 func playerStatsToRow(player *models.PlayerV3, showingPercentages bool) table.Row {
 	playerStats := player.Statistics
@@ -132,7 +150,7 @@ func newBoxScoreTable(boxScore *models.BoxScoreTraditionalV3, showingAway bool, 
 	return t
 }
 
-func (m appModel) renderBoxScoreView(header string, footer string) string {
+func renderBoxScoreView(header string, footer string, m appModel) string {
 	if m.currentBoxScore == nil {
 		return lipgloss.Place(
 			m.termWidth,
@@ -152,34 +170,6 @@ func (m appModel) renderBoxScoreView(header string, footer string) string {
 		lipgloss.Center,
 		header+"\n"+boxView+"\n"+footer,
 	)
-}
-
-func buildBoxScoreHeader(m appModel) string {
-	homeTricode := m.currentBoxScore.HomeTeam.TeamTricode
-	awayTricode := m.currentBoxScore.AwayTeam.TeamTricode
-
-	homePts := m.currentBoxScore.HomeTeam.Statistics.Points
-	awayPts := m.currentBoxScore.AwayTeam.Statistics.Points
-
-	away := createBigTeamBadgeStyle(awayTricode).Render(awayTricode)
-	home := createBigTeamBadgeStyle(homeTricode).Render(homeTricode)
-
-	scoreText := strconv.Itoa(awayPts) + "  —  " + strconv.Itoa(homePts)
-	score := boxScoreHeaderScoreStyle.Render(scoreText)
-
-	scoreHeader := boxScoreHeaderRowStyle.Render(
-		lipgloss.JoinHorizontal(lipgloss.Center, away, "  ", score, "  ", home),
-	)
-
-	statusText := preGameStatus
-	if homePts != awayPts != false {
-		statusText = "FINAL"
-	}
-
-	statusHeader := boxScoreHeaderStatusPillStyle.Render(strings.ToUpper(statusText))
-
-	dateHeader := boxScoreHeaderDateStyle.Render(m.date.Format(dateFormat))
-	return lipgloss.JoinVertical(lipgloss.Center, scoreHeader, statusHeader, dateHeader)
 }
 
 func buildBoxScoreFooter(m appModel) string {
