@@ -14,6 +14,9 @@ Keep your ball knowledge high without leaving your dev environment!
 - 🎨 **TUI Interface**: Interactive terminal interface built with Bubble Tea.
 - 🔌 **Custom NBA Stats API Client**: Includes a custom-authored Go client for the NBA Stats API (pkg/nba_api).
 
+![nbarecap demo](misc/demo/demo.gif)
+
+
 ## 🚀 Installation
 
 ```bash
