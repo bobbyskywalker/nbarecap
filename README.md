@@ -52,7 +52,7 @@ The Holy Trinity:
 ## 🗺 Roadmap
 
 Future plans for `nbarecap`:
-- 🚀 **Official Release**: v1.0 version.
+- 🚀 **Official Release**
 - 🏆 **Leaders**: New `leaders` command.
 - 📈 **Standings**: New `standings` command.
 
