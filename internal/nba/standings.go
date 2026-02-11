@@ -13,11 +13,5 @@ func GetStandingsForSeason(season string) ([]*models.Standing, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error fetching standings for season %s: %w", season, err)
 	}
-
-	standingsList, err := mappers.BuildStandingsList(client.Response.ResultSets)
-	if err != nil {
-		return nil, err
-	}
-
-	return standingsList, nil
+	return mappers.BuildStandingsList(client.Response.ResultSets)
 }
