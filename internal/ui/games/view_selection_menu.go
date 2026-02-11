@@ -1,4 +1,4 @@
-package ui
+package games
 
 import (
 	"github.com/charmbracelet/bubbles/list"

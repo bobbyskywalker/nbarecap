@@ -1,4 +1,4 @@
-package ui
+package games
 
 import (
 	"nbarecap/internal/utils"
